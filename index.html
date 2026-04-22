@@ -991,9 +991,9 @@ async function carregarHistorico() {
   const de = document.getElementById('h-de').value;
   const ate = document.getElementById('h-ate').value;
   let lista = vendasCache;
-  if (de) lista = lista.filter(v => v.data >= de);
-  if (ate) lista = lista.filter(v => v.data <= ate);
-  lista = lista.sort((a,b)=>b.data.localeCompare(a.data));
+  if (de) lista = lista.filter(v => normData(v.data) >= de);
+  if (ate) lista = lista.filter(v => normData(v.data) <= ate);
+  lista = lista.sort((a,b)=>normData(b.data).localeCompare(normData(a.data)));
 
   const totalG = lista.reduce((s,v)=>s+(parseFloat(v.total)||0),0);
   const porPag = {};
@@ -1071,8 +1071,9 @@ async function gerarRelatorio() {
 
   const vendas = vendasCache.filter(v=>{
     if (!v.data) return false;
-    const d = new Date(v.data+'T12:00:00');
-    return d.getMonth()===mes && d.getFullYear()===ano;
+    const nd = normData(v.data);
+    const [a,m] = nd.split('-').map(Number);
+    return m-1===mes && a===ano;
   });
 
   const total = vendas.reduce((s,v)=>s+(parseFloat(v.total)||0),0);
@@ -1105,7 +1106,7 @@ async function gerarRelatorio() {
     const d=new Date(ano,mes-i,1);
     const m=d.getMonth(), a=d.getFullYear();
     mLbls.push(nomeMes(m)+'/'+String(a).slice(2));
-    const mv=vendasCache.filter(v=>{if(!v.data)return false;const dv=new Date(v.data+'T12:00:00');return dv.getMonth()===m&&dv.getFullYear()===a;});
+    const mv=vendasCache.filter(v=>{if(!v.data)return false;const nd=normData(v.data);const[va,vm]=nd.split('-').map(Number);return vm-1===m&&va===a;});
     const mc={};
     mv.forEach(v=>(v.itens||[]).forEach(i=>{mc[i.categoria]=(mc[i.categoria]||0)+(parseFloat(i.subtotal)||parseFloat(i.preco)*i.qtd||0);}));
     CATEGORIAS.forEach(c=>mData[c].push(parseFloat((mc[c]||0).toFixed(2))));
@@ -1194,7 +1195,18 @@ function irPara(pg, btn) {
 
 // ─── UTILITÁRIOS ──────────────────────────────────
 function fmtR(v) { return Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function fmtData(s) { if(!s)return'—'; const[a,m,d]=s.split('-'); return`${d}/${m}/${a}`; }
+function normData(s) {
+  if (!s) return '';
+  const str = String(s);
+  if (str.includes('T')) {
+    const d = new Date(str);
+    d.setMinutes(d.getMinutes() + d.getTimezoneOffset() + 180);
+    return d.toISOString().split('T')[0];
+  }
+  if (str.match(/^\d{4}-\d{2}-\d{2}/)) return str.substring(0, 10);
+  return str;
+}
+function fmtData(s) { const n=normData(s); if(!n)return'—'; const[a,m,d]=n.split('-'); return `${d}/${m}/${a}`; }
 function nomePag(f) { return{dinheiro:'Dinheiro',pix:'Pix',debito:'Débito',credito:'Crédito'}[f]||f; }
 function nomeMes(m) { return['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][m]; }
 function abrirOv(id) { document.getElementById(id).classList.add('aberto'); }
