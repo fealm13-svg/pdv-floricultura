@@ -925,11 +925,34 @@ async function api(data){
 
 // ── TECLADO ──────────────────────────────────────────────
 function initTeclado(){
-  document.addEventListener('keydown',e=>{
+  const teclasF=['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'];
+  document.addEventListener('keydown', e=>{
+    if(teclasF.includes(e.key)){e.preventDefault();e.stopPropagation();}
+  }, true);
+  document.addEventListener('keydown', e=>{
     const tag=document.activeElement.tagName;
     const digitando=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
     const modalAberto=document.querySelector('.ov.aberto');
     if(e.key==='Escape'){if(modalAberto){modalAberto.classList.remove('aberto');e.preventDefault();}return;}
+    if(e.key==='Enter'&&modalAberto){
+      const id=modalAberto.id;
+      if(id==='ov-item'){e.preventDefault();confirmarItem();}
+      else if(id==='ov-preco'){e.preventDefault();confirmarNovoPreco();}
+      else if(id==='ov-fin-rapida'){e.preventDefault();confirmarFinRapida();}
+      else if(id==='ov-fin-completa'){e.preventDefault();confirmarFinCompleta();}
+      else if(id==='ov-pos-venda'){e.preventDefault();fecharPosVenda(false);}
+      return;
+    }
+    if(modalAberto||digitando)return;
+    const pg=document.querySelector('.pg.ativa');
+    if(!pg||pg.id!=='pg-lancamento')return;
+    if(e.key==='F1'){if(carrinho.length)abrirFinRapida();}
+    else if(e.key==='F2'){if(carrinho.length)abrirFinCompleta();}
+    else if(e.key==='F3'){document.getElementById('busca-input').focus();}
+    else if(e.key==='F4'){limparCarrinho();}
+    else if(e.key==='F9'){salvarVendaDireta();}
+  });
+}return;}
     if(e.key==='Enter'&&modalAberto){
       const id=modalAberto.id;
       if(id==='ov-item'){e.preventDefault();confirmarItem();}
