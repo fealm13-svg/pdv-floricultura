@@ -316,8 +316,7 @@ textarea.fi3{resize:vertical;min-height:56px;}
 /* ══════════════════════════════
    IMPRESSÃO
 ══════════════════════════════ */
-@media print{
-  body>*:not(#print-area){display:none!important}
+
   #print-area{display:block!important}
   @page{size:80mm auto;margin:2mm}
   body{zoom:97%}
@@ -373,8 +372,7 @@ textarea.fi3{resize:vertical;min-height:56px;}
 
 /* Relatório para impressão */
 .rel-print{display:none;}
-@media print{
-  .rel-print{display:block!important;}
+
   body>*:not(.rel-print){display:none!important;}
   @page{size:A4;margin:15mm}
 }
@@ -405,8 +403,7 @@ textarea.fi3{resize:vertical;min-height:56px;}
 .btn-del-item:hover{color:var(--vinho);}
 
 /* PDF de orçamento */
-@media print{
-  .no-print{display:none!important}
+
   #orc-print{display:block!important}
   @page{size:A4;margin:15mm}
 }
@@ -432,13 +429,20 @@ textarea.fi3{resize:vertical;min-height:56px;}
 .orc-pdf-footer-ass{text-align:right;font-size:11px;color:#555;}
 .orc-pdf-ass-line{border-top:1px solid #333;margin-top:30px;padding-top:4px;min-width:160px;}
 
-@media print{
-  body>*:not(#orc-print):not(#print-area){display:none!important}
+
   #orc-print,#print-area{display:block!important}
   @page{size:A4;margin:15mm}
 }
-#orc-print{display:none;}
 
+
+
+@media print{
+  body>*{display:none!important}
+  #orc-print,#print-area{display:block!important;zoom:97%}
+  #orc-print{font-family:'DM Sans',sans-serif;color:#1a1a1a;}
+  #print-area{font-family:Arial,sans-serif;font-size:9pt;color:#000;width:74mm;}
+  @page{margin:15mm}
+}
 </style>
 </head>
 
