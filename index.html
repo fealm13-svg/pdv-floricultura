@@ -433,6 +433,24 @@ textarea.fi3{resize:vertical;min-height:56px;}
   #print-area{font-family:Arial,sans-serif;font-size:9pt;color:#000;width:74mm;zoom:97%}
   @page{margin:8mm}
 }
+
+/* ══════════════════════════════
+   CONSULTA DE TICKETS
+══════════════════════════════ */
+.tkt-card{background:var(--panel);border-radius:9px;padding:11px 13px;margin-bottom:7px;border-left:3px solid var(--cinza2);transition:border-color .14s;}
+.tkt-card:hover{border-left-color:var(--vinho);}
+.tkt-card.entrega{border-left-color:#4a90d9;}
+.tkt-card.retirada{border-left-color:var(--verde);}
+.tkt-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.tkt-num{font-size:13px;font-weight:700;color:var(--vinho);}
+.tkt-tipo{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;}
+.tkt-tipo.entrega{background:#e3f2fd;color:#1565c0;}
+.tkt-tipo.retirada{background:#e8f5e9;color:#2e7d32;}
+.tkt-nome{font-size:13px;font-weight:600;margin-bottom:2px;}
+.tkt-info{font-size:11px;color:#888;line-height:1.6;}
+.tkt-prod{font-size:12px;color:var(--texto2);margin-top:3px;}
+.tkt-acoes{display:flex;gap:5px;margin-top:6px;}
+
 </style>
 </head>
 
@@ -654,6 +672,7 @@ textarea.fi3{resize:vertical;min-height:56px;}
     <div class="tk-tabs">
       <button class="tkb ativo" onclick="showTk('entrega',this)">🚚 Entrega</button>
       <button class="tkb" onclick="showTk('retirada',this)">🛍️ Retirada</button>
+      <button class="tkb" onclick="irParaConsultaTickets()">📋 Consultar</button>
     </div>
 
     <!-- ENTREGA -->
@@ -928,6 +947,30 @@ textarea.fi3{resize:vertical;min-height:56px;}
 </div>
 
 
+
+<!-- ══ CONSULTA TICKETS ══ -->
+<div class="pg" id="pg-tickets-hist" style="display:none">
+  <div class="pg-scroll">
+    <h1 class="pt">Consulta de Tickets</h1>
+    <div class="fw">
+      <input type="date" class="fi2" id="tk-de">
+      <span style="color:#888;font-size:12px">até</span>
+      <input type="date" class="fi2" id="tk-ate">
+      <select class="fi2" id="tk-tipo">
+        <option value="">Entrega + Retirada</option>
+        <option value="entrega">Só Entrega</option>
+        <option value="retirada">Só Retirada</option>
+      </select>
+      <input type="text" class="fi2" id="tk-busca-nome" placeholder="Buscar por nome..." oninput="renderTickets()">
+      <button class="fb vm" onclick="renderTickets()">Buscar</button>
+      <button class="fb vd" onclick="tkHoje()">Hoje</button>
+      <button class="fb vd" onclick="tkEsteMes()">Este mês</button>
+    </div>
+    <div class="rf" id="tkt-resumo"></div>
+    <div id="lista-tickets"></div>
+  </div>
+</div>
+
 <!-- ══ ORÇAMENTOS ══ -->
 <div class="pg" id="pg-orcamentos">
   <div class="pg-scroll">
@@ -1001,7 +1044,7 @@ const DIAS=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feir
 const MESES_LONG=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const NUM_PEDIDO_BASE=3278;
 
-let produtos=[],clientes=[],vendasCache=[],orcamentosCache=[];
+let produtos=[],clientes=[],vendasCache=[],orcamentosCache=[],ticketsCache=[];
 let carrinho=[],prodSel=null,idxEditandoPreco=null,charts={};
 let fc2formas=false,frenteAtual='Loja Física';
 let vendaPendente={},clienteSelecionado=null,modoBarras='total',vendaParaCupom=null;
@@ -1056,7 +1099,7 @@ async function fazerLogin(){
       document.getElementById('main-hdr').style.display='flex';
       document.querySelectorAll('.pg').forEach(p=>p.style.display='');
       document.getElementById('pg-lancamento').classList.add('ativa');
-      await Promise.all([carregarProdutos(),carregarClientes(),carregarOrcamentos()]);
+      await Promise.all([carregarProdutos(),carregarClientes(),carregarOrcamentos(),carregarTickets()]);
       tick();setInterval(tick,1000);
     }else{erro.textContent='Senha incorreta. Tente novamente.';}
   }catch(e){erro.textContent='Erro de conexão. Tente novamente.';}
@@ -1065,7 +1108,7 @@ async function fazerLogin(){
 
 // ── API ──────────────────────────────────────────────────
 async function api(data){
-  const leitura=['listarVendas','listarProdutos','listarClientes','listarOrcamentos'];
+  const leitura=['listarVendas','listarProdutos','listarClientes','listarOrcamentos','listarTickets'];
   if(leitura.includes(data.action)){
     const r=await fetch(API+'?action='+data.action);
     const t=await r.text();
@@ -1810,8 +1853,8 @@ function rowTk(lb,vl){return`<div class="tk-row"><span class="lb">${lb}</span><s
 function rowIf(lb,vl){return vl?rowTk(lb,vl):'';}
 function hdrLoja(){return`<div class="tk-hdr"><div class="tk-loja">Floricultura Dias</div><div class="tk-info">WhatsApp: (11) 95278-1267</div><div class="tk-info">www.floriculturadias.com</div></div>`;}
 
-function gerarEntrega(){
-  const num=incrementarPedido();
+async function gerarEntrega(){
+  const numLocal=incrementarPedido();
   const data=fmt_data_tk(vTk('e-data'))||'—',hora=vTk('e-hora')||'—';
   const nome=vTk('e-nome')||'—',end=vTk('e-end')||'—';
   const bairro=vTk('e-bairro'),cidade=vTk('e-cidade'),tel=vTk('e-tel')||'—';
@@ -1820,18 +1863,20 @@ function gerarEntrega(){
   const prod=vTk('e-prod')||'—',obs=vTk('e-obs');
   const fin=document.getElementById('chk-fin').checked;
   let html=hdrLoja();
-  html+=`<div class="tk-sec">${rowTk('Pedido Nº','#'+num)}${rowTk('Data',data)}${rowTk('Hora',hora)}</div>`;
+  html+=`<div class="tk-sec">${rowTk('Pedido Nº','#'+numLocal)}${rowTk('Data',data)}${rowTk('Hora',hora)}</div>`;
   html+=`<div class="tk-sec"><div class="tk-title">Destinatário</div><div class="tk-nome">${nome}</div>${rowTk('Endereço',end)}${rowIf('Bairro',bairro)}${rowIf('Cidade',cidade)}${rowTk('Tel',tel)}${rowIf('Cargo/Depto',cargo)}${rowIf('Referência',ref)}</div>`;
   if(rem)html+=`<div class="tk-sec"><div class="tk-title">Remetente</div>${rowTk('Nome',vTk('e-rem-nome')||'—')}${rowTk('Tel',vTk('e-rem-tel')||'—')}</div>`;
   html+=`<div class="tk-sec"><div class="tk-title">Pedido</div>${rowTk('Produto',prod)}${obs?`<div class="tk-obs2">Obs: ${obs}</div>`:''}</div>`;
   if(fin)html+=`<div class="tk-sec"><div class="tk-title">Financeiro</div>${rowTk('Valor',vTk('e-valor')||'—')}${rowTk('Pagamento',vTk('e-pgto')||'—')}${rowTk('Status',vTk('e-status')||'—')}</div>`;
   html+=`<div class="tk-rodape"><div class="tk-rl"><div class="tk-rlbl">Recebido por:</div><div class="tk-rline"></div></div><div class="tk-rl"><div class="tk-rlbl">Horário:</div><div class="tk-rline"></div></div></div>`;
   const area=document.getElementById('print-area');area.innerHTML=html;window.print();area.innerHTML='';
+  // Salva no Sheets
+  salvarTicketNaApi({tipo:'entrega',data:vTk('e-data'),hora:vTk('e-hora'),nome:nome,telefone:tel,endereco:end,bairro:bairro,cidade:cidade,produto:prod,observacao:obs,remetente_nome:rem?vTk('e-rem-nome'):'',remetente_tel:rem?vTk('e-rem-tel'):'',valor:fin?vTk('e-valor'):'',pagamento:fin?vTk('e-pgto'):''});
   atualizarDisplayPedido();
 }
 
-function gerarRetirada(){
-  const num=incrementarPedido();
+async function gerarRetirada(){
+  const numLocal=incrementarPedido();
   const data=fmt_data_tk(vTk('r-data'))||'—',hora=vTk('r-hora')||'—';
   const nome=vTk('r-nome')||'—',tel=vTk('r-tel')||'—';
   const prod=vTk('r-prod')||'—',obs=vTk('r-obs');
@@ -1842,7 +1887,7 @@ function gerarRetirada(){
     let h='';if(isCliente)h+='<div class="tk-corte">✂ cortar aqui</div>';
     h+=hdrLoja();
     h+=`<div class="tk-via">— ${isCliente?'Via Cliente':'Via Estabelecimento'} —</div>`;
-    h+=`<div class="tk-sec">${rowTk('Pedido Nº','#'+num)}${rowTk('Data',data)}${rowTk('Hora',hora)}</div>`;
+    h+=`<div class="tk-sec">${rowTk('Pedido Nº','#'+numLocal)}${rowTk('Data',data)}${rowTk('Hora',hora)}</div>`;
     h+=`<div class="tk-sec"><div class="tk-title">Retirada</div><div class="tk-ret-nome">${nome}</div>${rowTk('Tel',tel)}</div>`;
     h+=`<div class="tk-sec"><div class="tk-title">Pedido</div>${rowTk('Produto',prod)}${obs?`<div class="tk-obs2">Obs: ${obs}</div>`:''}</div>`;
     if(pago){h+=`<div class="tk-last" style="text-align:center;padding:4px 0"><div class="tk-pago">✓ PAGO</div>`;if(!isCliente)h+=`<div style="margin-top:3px">${rowTk('Valor',valor||'—')}${rowTk('Pagamento',pgto||'—')}</div>`;h+='</div>';}
@@ -1851,6 +1896,8 @@ function gerarRetirada(){
   let html=viaHtml(false);
   if(vias==='ambas')html+=viaHtml(true);
   const area=document.getElementById('print-area');area.innerHTML=html;window.print();area.innerHTML='';
+  // Salva no Sheets
+  salvarTicketNaApi({tipo:'retirada',data:vTk('r-data'),hora:vTk('r-hora'),nome:nome,telefone:tel,produto:prod,observacao:obs,valor:pago?valor:'',pagamento:pago?pgto:''});
   atualizarDisplayPedido();
 }
 
@@ -1876,7 +1923,7 @@ function irPara(pg,btn){
   if(pg==='produtos')renderProds();
   if(pg==='clientes'){carregarClientes().then(()=>renderClientes());}
   if(pg==='orcamentos'){carregarOrcamentos();}
-  if(pg==='tickets')atualizarDisplayPedido();
+  if(pg==='tickets'){atualizarDisplayPedido();renderTickets();}
 }
 
 // ── UTILITÁRIOS ─────────────────────────────────────────
@@ -1892,6 +1939,106 @@ function esconderLoading(){document.getElementById('loading').style.display='non
 
 let tT;
 function toast(msg,tipo=''){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+tipo;clearTimeout(tT);tT=setTimeout(()=>el.className='toast',2800);}
+
+
+// ── TICKETS — SALVAR E CONSULTAR ────────────────────────
+async function carregarTickets(){
+  try{const r=await api({action:'listarTickets'});if(r.ok)ticketsCache=r.tickets||[];}catch(e){}
+}
+
+async function salvarTicketNaApi(dados){
+  try{
+    const r=await api({action:'salvarTicket',...dados});
+    if(r.ok){
+      ticketsCache.push({...dados,id:r.id,numero:r.numero});
+      return r.numero;
+    }
+  }catch(e){console.error('Erro ao salvar ticket',e);}
+  return null;
+}
+
+async function deletarTicketApi(id){
+  if(!confirm('Excluir este ticket?'))return;
+  mostrarLoading('Excluindo...');
+  const r=await api({action:'deletarTicket',id});
+  esconderLoading();
+  if(r.ok){toast('Ticket excluído','ok');await carregarTickets();renderTickets();}
+  else toast('Erro: '+r.erro,'err');
+}
+
+function irParaConsultaTickets(){
+  // Esconde todas as páginas, mostra a de consulta
+  document.querySelectorAll('.pg').forEach(el=>el.classList.remove('ativa'));
+  document.querySelectorAll('.nb').forEach(el=>el.classList.remove('ativo'));
+  // Ativa aba tickets no nav e mostra página de consulta
+  document.querySelector('.nb[onclick*="tickets"]').classList.add('ativo');
+  const pg=document.getElementById('pg-tickets-hist');
+  pg.style.display='flex';pg.classList.add('ativa');
+  tkEsteMes();
+}
+
+function tkHoje(){
+  const h=dataHoje();
+  document.getElementById('tk-de').value=h;
+  document.getElementById('tk-ate').value=h;
+  renderTickets();
+}
+function tkEsteMes(){
+  const n=new Date();
+  document.getElementById('tk-de').value=new Date(n.getFullYear(),n.getMonth(),1).toISOString().split('T')[0];
+  document.getElementById('tk-ate').value=new Date(n.getFullYear(),n.getMonth()+1,0).toISOString().split('T')[0];
+  renderTickets();
+}
+
+function renderTickets(){
+  const de=document.getElementById('tk-de').value;
+  const ate=document.getElementById('tk-ate').value;
+  const tipo=document.getElementById('tk-tipo').value;
+  const busca=(document.getElementById('tk-busca-nome').value||'').toLowerCase();
+
+  let lista=[...ticketsCache];
+  if(de)lista=lista.filter(t=>normData(t.data)>=de);
+  if(ate)lista=lista.filter(t=>normData(t.data)<=ate);
+  if(tipo)lista=lista.filter(t=>(t.tipo||'entrega')===tipo);
+  if(busca)lista=lista.filter(t=>(t.nome||'').toLowerCase().includes(busca));
+  lista=lista.sort((a,b)=>b.numero-a.numero);
+
+  // Resumo
+  const total=lista.length;
+  const entregas=lista.filter(t=>(t.tipo||'entrega')==='entrega').length;
+  const retiradas=lista.filter(t=>t.tipo==='retirada').length;
+  document.getElementById('tkt-resumo').innerHTML=`
+    <div class="rfi"><div class="rv">${total}</div><div class="rl">Total</div></div>
+    <div class="rfi"><div class="rv">${entregas}</div><div class="rl">Entregas</div></div>
+    <div class="rfi"><div class="rv">${retiradas}</div><div class="rl">Retiradas</div></div>
+  `;
+
+  const el=document.getElementById('lista-tickets');
+  if(!lista.length){el.innerHTML='<div class="es"><div class="ei">🎫</div><p>Nenhum ticket encontrado</p></div>';return;}
+
+  el.innerHTML=lista.map(t=>{
+    const tipo=t.tipo||'entrega';
+    const dataStr=fmtData(t.data);
+    return`<div class="tkt-card ${tipo}">
+      <div class="tkt-header">
+        <span class="tkt-num">#${t.numero}</span>
+        <span class="tkt-tipo ${tipo}">${tipo==='entrega'?'🚚 Entrega':'🛍️ Retirada'}</span>
+      </div>
+      <div class="tkt-nome">${t.nome||'—'}</div>
+      <div class="tkt-info">
+        📅 ${dataStr}${t.hora?' · '+t.hora:''} ${t.telefone?' · '+t.telefone:''}
+        ${t.endereco?`<br>📍 ${t.endereco}${t.bairro?' - '+t.bairro:''}${t.cidade?' - '+t.cidade:''}`:''}
+        ${t.remetente_nome?`<br>✉️ Remetente: ${t.remetente_nome}${t.remetente_tel?' · '+t.remetente_tel:''}`:''}
+      </div>
+      ${t.produto?`<div class="tkt-prod">📦 ${t.produto}</div>`:''}
+      ${t.observacao?`<div style="font-size:10px;color:#888;font-style:italic;margin-top:2px">💬 ${t.observacao}</div>`:''}
+      ${t.valor?`<div style="font-size:11px;color:var(--verde2);margin-top:2px">💵 ${t.valor}${t.pagamento?' · '+t.pagamento:''}</div>`:''}
+      <div class="tkt-acoes">
+        <button class="ba2" onclick="deletarTicketApi('${t.id}')">🗑 Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('aberto');}));
 
