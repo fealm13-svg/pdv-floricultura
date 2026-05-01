@@ -2132,7 +2132,9 @@ function renderTickets(){
       ${t.observacao?`<div style="font-size:10px;color:#888;font-style:italic;margin-top:2px">💬 ${t.observacao}</div>`:''}
       ${t.cartao_msg?`<div style="font-size:11px;color:var(--texto2);margin-top:3px;background:var(--panel);border-radius:5px;padding:5px 8px">💌 <em>${t.cartao_msg}</em>${t.cartao_ass?' — '+t.cartao_ass:''}</div>`:''}
       ${t.valor?`<div style="font-size:11px;color:var(--verde2);margin-top:2px">💵 ${t.valor}${t.pagamento?' · '+t.pagamento:''}</div>`:''}
+      ${t.termos_aceitos?`<div style="font-size:10px;color:var(--verde2);margin-top:2px">✅ Termos aceitos em ${t.termos_aceitos}</div>`:''}
       <div class="tkt-acoes">
+        <button class="ba2" onclick="gerarPdfTicket('${t.id}')">📄 PDF</button>
         <button class="ba2" onclick="deletarTicketApi('${t.id}')">🗑 Excluir</button>
       </div>
     </div>`;
@@ -2178,10 +2180,9 @@ async function gerarLinkAgendamento(){
   if(!r.ok){toast('Erro ao salvar','err');return;}
 
   const numero=r.numero;
-  const nomeEnc=encodeURIComponent(nome);
-  const prodEnc=encodeURIComponent(produto);
-  const url=`https://pdv.floriculturadias.com/agendamento.html?pedido=${numero}&cliente=${nomeEnc}&produto=${prodEnc}`;
-  const msg=`Obrigada pelo seu pedido, ${nome}! 🌸 Para finalizar a compra, precisamos que você preencha o formulário de entrega e escolha a melhor data e período: ${url}`;
+  const primeiroNome=nome.split(' ')[0];
+  const url=`https://pdv.floriculturadias.com/agendamento.html?pedido=${numero}&cliente=${primeiroNome}`;
+  const msg=`Obrigada pelo seu pedido, ${primeiroNome}! 🌸 Para finalizar a compra, precisamos que você preencha o formulário de entrega e escolha a melhor data e período: ${url}`;
 
   linkGeradoUrl=url;
   linkGeradoTel=tel.replace(/\D/g,'');
@@ -2196,17 +2197,15 @@ async function gerarLinkAgendamento(){
 }
 
 function copiarLink(){
-  const nome=linkGeradoNome;
-  const url=linkGeradoUrl;
-  const msg=`Obrigada pelo seu pedido, ${nome}! 🌸 Para finalizar a compra, precisamos que você preencha o formulário de entrega e escolha a melhor data e período: ${url}`;
+  const primeiroNome=linkGeradoNome.split(' ')[0];
+  const msg=`Obrigada pelo seu pedido, ${primeiroNome}! 🌸 Para finalizar a compra, precisamos que você preencha o formulário de entrega e escolha a melhor data e período: ${linkGeradoUrl}`;
   navigator.clipboard.writeText(msg).then(()=>toast('Mensagem copiada! ✓','ok')).catch(()=>toast('Erro ao copiar','err'));
 }
 
 function abrirWpp(){
-  const nome=linkGeradoNome;
-  const url=linkGeradoUrl;
-  const msg=encodeURIComponent(`Obrigada pelo seu pedido, ${nome}! 🌸 Para finalizar a compra, precisamos que você preencha o formulário de entrega e escolha a melhor data e período: ${url}`);
-  const tel=linkGeradoTel?`${linkGeradoTel}`:'';
+  const primeiroNome=linkGeradoNome.split(' ')[0];
+  const msg=encodeURIComponent(`Obrigada pelo seu pedido, ${primeiroNome}! 🌸 Para finalizar a compra, precisamos que você preencha o formulário de entrega e escolha a melhor data e período: ${linkGeradoUrl}`);
+  const tel=linkGeradoTel;
   window.open(`https://wa.me/${tel?'55'+tel:''}?text=${msg}`,'_blank');
 }
 
@@ -2302,6 +2301,68 @@ function confirmarAgendaPdv(){
   if(horaInput)horaInput.value=slotLabel;
   fecharOv('ov-agenda-pdv');
   toast(`Agendado: ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} · ${String(pdvSlotSel).padStart(2,'0')}:00–${String(pdvSlotSel+1).padStart(2,'0')}:00 ✓`,'ok');
+}
+
+
+// ── PDF DO TICKET ────────────────────────────────────────
+function gerarPdfTicket(id){
+  const t=ticketsCache.find(x=>x.id===id);if(!t)return;
+  const tipo=(t.tipo||'entrega')==='entrega'?'🚚 ENTREGA':'🛍️ RETIRADA';
+  const html=`
+  <div style="font-family:'DM Sans',sans-serif;color:#1a1a1a;padding:10px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:3px solid #a91537;margin-bottom:16px">
+      <div>
+        <div style="font-size:18px;font-weight:700;color:#a91537">Floricultura Dias</div>
+        <div style="font-size:11px;color:#555">CNPJ: 43.038.918/0001-32 · (11) 95278-1267</div>
+        <div style="font-size:11px;color:#555">Al. Barão de Limeira, 998 - Campos Elíseos · SP</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:700">Pedido #${t.numero}</div>
+        <div style="font-size:11px;color:#555">${tipo}</div>
+        <div style="font-size:11px;color:#555">Origem: ${t.origem==='cliente'?'Formulário do cliente':'PDV'}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:#fff5e1;border-radius:7px;padding:12px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">📦 Pedido</div>
+        <div style="font-size:13px;font-weight:600">${t.produto||'—'}</div>
+        <div style="font-size:11px;color:#555;margin-top:4px">Data: ${t.data||'A definir'}</div>
+        <div style="font-size:11px;color:#555">Período: ${t.hora||'A definir'}</div>
+      </div>
+      <div style="background:#fff5e1;border-radius:7px;padding:12px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">👤 Destinatário</div>
+        <div style="font-size:13px;font-weight:600">${t.nome||'—'}</div>
+        ${t.telefone?`<div style="font-size:11px;color:#555">Tel: ${t.telefone}</div>`:''}
+        ${t.tipo_end?`<div style="font-size:11px;color:#555">Tipo: ${t.tipo_end==='residencial'?'Residencial':'Comercial'}</div>`:''}
+      </div>
+    </div>
+    ${(t.endereco||t.bairro||t.cidade)?`
+    <div style="background:#fff5e1;border-radius:7px;padding:12px;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">📍 Endereço de entrega</div>
+      ${t.endereco?`<div style="font-size:12px">${t.endereco}</div>`:''}
+      ${t.bairro?`<div style="font-size:12px;color:#555">${t.bairro}${t.cidade?' · '+t.cidade:''}</div>`:''}
+      ${t.observacao?`<div style="font-size:11px;color:#666;margin-top:4px;font-style:italic">Obs: ${t.observacao}</div>`:''}
+    </div>`:''}
+    ${(t.cartao_msg||t.cartao_ass)?`
+    <div style="background:#fff5e1;border-radius:7px;padding:12px;margin-bottom:12px;border-left:3px solid #95a37b">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">💌 Mensagem do cartão</div>
+      ${t.cartao_msg?`<div style="font-size:13px;font-style:italic">"${t.cartao_msg}"</div>`:''}
+      ${t.cartao_ass?`<div style="font-size:12px;color:#555;margin-top:4px">— ${t.cartao_ass}</div>`:''}
+    </div>`:''}
+    ${t.remetente_nome?`
+    <div style="background:#fff5e1;border-radius:7px;padding:12px;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">✉️ Remetente</div>
+      <div style="font-size:12px">${t.remetente_nome}${t.remetente_tel?' · '+t.remetente_tel:''}</div>
+    </div>`:''}
+    ${t.termos_aceitos?`<div style="font-size:10px;color:#888;margin-bottom:12px">✅ Termos de entrega aceitos em ${t.termos_aceitos}</div>`:''}
+    <div style="border-top:2px solid #95a37b;padding-top:10px;display:flex;justify-content:space-between;font-size:10px;color:#888">
+      <span>Floricultura Dias · www.floriculturadias.com</span>
+      <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+    </div>
+  </div>`;
+
+  document.getElementById('print-area').innerHTML=html;
+  setTimeout(()=>{window.print();document.getElementById('print-area').innerHTML='';},200);
 }
 
 document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('aberto');}));
