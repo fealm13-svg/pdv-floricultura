@@ -430,8 +430,9 @@ textarea.fi3{resize:vertical;min-height:56px;}
   body>*{display:none!important}
   #orc-print,#print-area{display:block!important}
   #orc-print{font-family:'DM Sans',sans-serif;color:#1a1a1a;}
-  #print-area{font-family:Arial,sans-serif;font-size:9pt;color:#000;width:74mm;zoom:97%}
-  @page{margin:8mm}
+  #print-area{font-family:'DM Sans',sans-serif;color:#1a1a1a;}
+  #print-area.modo-80mm{font-family:Arial,sans-serif;font-size:9pt;color:#000;width:74mm;zoom:97%}
+  @page{margin:10mm}
 }
 
 /* ══════════════════════════════
@@ -1434,8 +1435,8 @@ function fecharPosVenda(imprimir){
 
 // ── CUPOM ────────────────────────────────────────────────
 function imprimirCupomDireto(venda){
-  document.getElementById('print-area').innerHTML=montarHtmlCupom(venda);
-  setTimeout(()=>{window.print();document.getElementById('print-area').innerHTML='';},200);
+  const pa=document.getElementById('print-area');pa.className='modo-80mm';pa.innerHTML=montarHtmlCupom(venda);
+  setTimeout(()=>{window.print();pa.innerHTML='';pa.className='';},200);
 }
 function montarHtmlCupom(venda){
   return`<div class="cupom-hdr"><div class="cupom-loja">${LOJA.nome}</div><div class="cupom-info">CNPJ: ${LOJA.cnpj}</div><div class="cupom-info">${LOJA.end}</div><div class="cupom-info">${LOJA.cidade}</div><div class="cupom-info">Tel: ${LOJA.tel} | ${LOJA.site}</div><div class="cupom-info">${LOJA.desde}</div></div><div class="cupom-sec"><div class="cupom-titulo">Cupom Não Fiscal</div><div class="cupom-row"><span class="cn">Data:</span><span class="cv">${fmtData(venda.data)}</span></div>${venda.cliente_nome?`<div class="cupom-row"><span class="cn">Cliente:</span><span class="cv">${venda.cliente_nome}</span></div>`:''}</div><div class="cupom-sec"><div class="cupom-titulo">Itens</div>${(venda.itens||[]).map(i=>`<div class="cupom-row"><span class="cn">${i.qtd}x ${i.nome}</span><span class="cv">R$ ${fmtR(i.subtotal||i.preco*i.qtd)}</span></div>`).join('')}</div><div class="cupom-sec"><div class="cupom-total"><span>TOTAL</span><span>R$ ${fmtR(venda.total)}</span></div>${(venda.pagamentos||[]).map(p=>`<div class="cupom-row"><span class="cn">${nomePag(p.forma)}</span><span class="cv">R$ ${fmtR(p.valor)}</span></div>`).join('')}</div><div class="cupom-rodape"><div>Obrigado pela preferência!</div><div>${LOJA.site}</div></div>`;
@@ -1967,7 +1968,7 @@ async function gerarEntrega(){
   html+=`<div class="tk-sec"><div class="tk-title">Pedido</div>${rowTk('Produto',prod)}${obs?`<div class="tk-obs2">Obs: ${obs}</div>`:''}</div>`;
   if(fin)html+=`<div class="tk-sec"><div class="tk-title">Financeiro</div>${rowTk('Valor',vTk('e-valor')||'—')}${rowTk('Pagamento',vTk('e-pgto')||'—')}${rowTk('Status',vTk('e-status')||'—')}</div>`;
   html+=`<div class="tk-rodape"><div class="tk-rl"><div class="tk-rlbl">Recebido por:</div><div class="tk-rline"></div></div><div class="tk-rl"><div class="tk-rlbl">Horário:</div><div class="tk-rline"></div></div></div>`;
-  const area=document.getElementById('print-area');area.innerHTML=html;window.print();area.innerHTML='';
+  const area=document.getElementById('print-area');area.className='modo-80mm';area.innerHTML=html;window.print();area.innerHTML='';area.className='';
   // Salva no Sheets
   salvarTicketNaApi({tipo:'entrega',data:vTk('e-data'),hora:vTk('e-hora'),nome:nome,telefone:tel,endereco:end,bairro:bairro,cidade:cidade,produto:prod,observacao:obs,remetente_nome:rem?vTk('e-rem-nome'):'',remetente_tel:rem?vTk('e-rem-tel'):'',valor:fin?vTk('e-valor'):'',pagamento:fin?vTk('e-pgto'):''});
   atualizarDisplayPedido();
@@ -1993,7 +1994,7 @@ async function gerarRetirada(){
   }
   let html=viaHtml(false);
   if(vias==='ambas')html+=viaHtml(true);
-  const area=document.getElementById('print-area');area.innerHTML=html;window.print();area.innerHTML='';
+  const area=document.getElementById('print-area');area.className='modo-80mm';area.innerHTML=html;window.print();area.innerHTML='';area.className='';
   // Salva no Sheets
   salvarTicketNaApi({tipo:'retirada',data:vTk('r-data'),hora:vTk('r-hora'),nome:nome,telefone:tel,produto:prod,observacao:obs,valor:pago?valor:'',pagamento:pago?pgto:''});
   atualizarDisplayPedido();
@@ -2308,56 +2309,100 @@ function confirmarAgendaPdv(){
 function gerarPdfTicket(id){
   const t=ticketsCache.find(x=>x.id===id);if(!t)return;
   const tipo=(t.tipo||'entrega')==='entrega'?'🚚 ENTREGA':'🛍️ RETIRADA';
-  const html=`
-  <div style="font-family:'DM Sans',sans-serif;color:#1a1a1a;padding:10px">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:3px solid #a91537;margin-bottom:16px">
+  const origemLabel=t.origem==='cliente'?'Formulário do cliente':t.origem==='pendente'?'Aguardando cliente':'PDV';
+
+  // Formata data
+  let dataFmt=t.data||'A definir';
+  if(t.data&&t.data.includes('-')){const[a,m,d]=t.data.split('-');dataFmt=`${d}/${m}/${a}`;}
+  if(t.data&&t.data.includes('T')){const nd=normData(t.data);const[a,m,d]=nd.split('-');dataFmt=`${d}/${m}/${a}`;}
+
+  const html=`<div style="font-family:'DM Sans',sans-serif;color:#1a1a1a;padding:20px;max-width:700px;margin:0 auto">
+
+    <!-- Cabeçalho -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:14px;border-bottom:3px solid #a91537;margin-bottom:20px">
       <div>
-        <div style="font-size:18px;font-weight:700;color:#a91537">Floricultura Dias</div>
-        <div style="font-size:11px;color:#555">CNPJ: 43.038.918/0001-32 · (11) 95278-1267</div>
-        <div style="font-size:11px;color:#555">Al. Barão de Limeira, 998 - Campos Elíseos · SP</div>
+        <div style="font-size:20px;font-weight:700;color:#a91537;margin-bottom:2px">Floricultura Dias</div>
+        <div style="font-size:11px;color:#555;line-height:1.6">
+          CNPJ: 43.038.918/0001-32<br>
+          Al. Barão de Limeira, 998 - Campos Elíseos · São Paulo/SP<br>
+          (11) 95278-1267 · www.floriculturadias.com · Desde 1971
+        </div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:13px;font-weight:700">Pedido #${t.numero}</div>
-        <div style="font-size:11px;color:#555">${tipo}</div>
-        <div style="font-size:11px;color:#555">Origem: ${t.origem==='cliente'?'Formulário do cliente':'PDV'}</div>
+        <div style="font-size:22px;font-weight:700;color:#a91537">Pedido #${t.numero}</div>
+        <div style="font-size:12px;color:#555;margin-top:2px">${tipo}</div>
+        <div style="font-size:11px;color:#888">Origem: ${origemLabel}</div>
       </div>
     </div>
+
+    <!-- Grid de informações principais -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div style="background:#fff5e1;border-radius:7px;padding:12px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">📦 Pedido</div>
-        <div style="font-size:13px;font-weight:600">${t.produto||'—'}</div>
-        <div style="font-size:11px;color:#555;margin-top:4px">Data: ${t.data||'A definir'}</div>
-        <div style="font-size:11px;color:#555">Período: ${t.hora||'A definir'}</div>
+      <div style="background:#fff5e1;border-radius:8px;padding:14px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#a91537;margin-bottom:8px">📦 Pedido</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">${t.produto||'—'}</div>
+        <div style="font-size:12px;color:#555;line-height:1.8">
+          <strong>Data:</strong> ${dataFmt}<br>
+          <strong>Período:</strong> ${t.hora||'A definir'}
+        </div>
       </div>
-      <div style="background:#fff5e1;border-radius:7px;padding:12px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">👤 Destinatário</div>
-        <div style="font-size:13px;font-weight:600">${t.nome||'—'}</div>
-        ${t.telefone?`<div style="font-size:11px;color:#555">Tel: ${t.telefone}</div>`:''}
-        ${t.tipo_end?`<div style="font-size:11px;color:#555">Tipo: ${t.tipo_end==='residencial'?'Residencial':'Comercial'}</div>`:''}
+      <div style="background:#fff5e1;border-radius:8px;padding:14px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#a91537;margin-bottom:8px">👤 Destinatário</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px">${t.nome||'—'}</div>
+        <div style="font-size:12px;color:#555;line-height:1.8">
+          ${t.telefone?`<strong>Tel:</strong> ${t.telefone}<br>`:''}
+          ${t.tipo_end?`<strong>Tipo:</strong> ${t.tipo_end==='residencial'?'Residencial':'Comercial'}`:''}
+        </div>
       </div>
     </div>
-    ${(t.endereco||t.bairro||t.cidade)?`
-    <div style="background:#fff5e1;border-radius:7px;padding:12px;margin-bottom:12px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">📍 Endereço de entrega</div>
-      ${t.endereco?`<div style="font-size:12px">${t.endereco}</div>`:''}
-      ${t.bairro?`<div style="font-size:12px;color:#555">${t.bairro}${t.cidade?' · '+t.cidade:''}</div>`:''}
-      ${t.observacao?`<div style="font-size:11px;color:#666;margin-top:4px;font-style:italic">Obs: ${t.observacao}</div>`:''}
+
+    <!-- Endereço -->
+    ${(t.endereco||t.bairro)?`
+    <div style="background:#fff5e1;border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#a91537;margin-bottom:8px">📍 Endereço de entrega</div>
+      <div style="font-size:13px;line-height:1.8">
+        ${t.endereco?`<strong>${t.endereco}</strong><br>`:''}
+        ${t.bairro?`${t.bairro}${t.cidade?' · '+t.cidade:''}<br>`:''}
+        ${t.observacao?`<span style="color:#666;font-style:italic">Obs: ${t.observacao}</span>`:''}
+      </div>
     </div>`:''}
-    ${(t.cartao_msg||t.cartao_ass)?`
-    <div style="background:#fff5e1;border-radius:7px;padding:12px;margin-bottom:12px;border-left:3px solid #95a37b">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">💌 Mensagem do cartão</div>
-      ${t.cartao_msg?`<div style="font-size:13px;font-style:italic">"${t.cartao_msg}"</div>`:''}
-      ${t.cartao_ass?`<div style="font-size:12px;color:#555;margin-top:4px">— ${t.cartao_ass}</div>`:''}
-    </div>`:''}
+
+    <!-- Remetente -->
     ${t.remetente_nome?`
-    <div style="background:#fff5e1;border-radius:7px;padding:12px;margin-bottom:12px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a91537;margin-bottom:6px">✉️ Remetente</div>
-      <div style="font-size:12px">${t.remetente_nome}${t.remetente_tel?' · '+t.remetente_tel:''}</div>
+    <div style="background:#fff5e1;border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#a91537;margin-bottom:8px">✉️ Remetente</div>
+      <div style="font-size:13px">${t.remetente_nome}${t.remetente_tel?' · '+t.remetente_tel:''}</div>
     </div>`:''}
-    ${t.termos_aceitos?`<div style="font-size:10px;color:#888;margin-bottom:12px">✅ Termos de entrega aceitos em ${t.termos_aceitos}</div>`:''}
-    <div style="border-top:2px solid #95a37b;padding-top:10px;display:flex;justify-content:space-between;font-size:10px;color:#888">
-      <span>Floricultura Dias · www.floriculturadias.com</span>
-      <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+
+    <!-- Mensagem do cartão -->
+    ${(t.cartao_msg||t.cartao_ass)?`
+    <div style="background:#f6faf2;border-radius:8px;padding:14px;margin-bottom:12px;border-left:4px solid #95a37b">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#95a37b;margin-bottom:8px">💌 Mensagem do cartão</div>
+      ${t.cartao_msg?`<div style="font-size:14px;font-style:italic;color:#2a1a1e;line-height:1.6;margin-bottom:6px">"${t.cartao_msg}"</div>`:''}
+      ${t.cartao_ass?`<div style="font-size:13px;color:#555">— ${t.cartao_ass}</div>`:''}
+    </div>`:''}
+
+    <!-- Informações financeiras -->
+    ${(t.valor||t.pagamento)?`
+    <div style="background:#fff5e1;border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#a91537;margin-bottom:8px">💰 Financeiro</div>
+      <div style="font-size:13px;line-height:1.8">
+        ${t.valor?`<strong>Valor:</strong> ${t.valor}<br>`:''}
+        ${t.pagamento?`<strong>Pagamento:</strong> ${t.pagamento}`:''}
+      </div>
+    </div>`:''}
+
+    <!-- Termos -->
+    ${t.termos_aceitos?`
+    <div style="background:#e8f5e9;border-radius:8px;padding:10px 14px;margin-bottom:12px">
+      <div style="font-size:11px;color:#2e7d32">✅ Termos de entrega aceitos em ${t.termos_aceitos}</div>
+    </div>`:''}
+
+    <!-- Rodapé -->
+    <div style="border-top:2px solid #95a37b;padding-top:12px;display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+      <div style="font-size:10px;color:#888">
+        <strong>Floricultura Dias</strong> · www.floriculturadias.com · (11) 95278-1267
+      </div>
+      <div style="font-size:10px;color:#888">Gerado em ${new Date().toLocaleString('pt-BR')}</div>
     </div>
   </div>`;
 
