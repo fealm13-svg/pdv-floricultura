@@ -432,7 +432,11 @@ textarea.fi3{resize:vertical;min-height:56px;}
   #orc-print{font-family:'DM Sans',sans-serif;color:#1a1a1a;}
   #print-area{font-family:'DM Sans',sans-serif;color:#1a1a1a;}
   #print-area.modo-80mm{font-family:Arial,sans-serif;font-size:9pt;color:#000;width:74mm;zoom:97%}
+  #print-area.modo-a4{font-family:'DM Sans',sans-serif;color:#1a1a1a;width:100%;}
   @page{margin:10mm}
+}
+@media print and (#print-area.modo-a4){
+  @page{size:A4;margin:15mm}
 }
 
 /* ══════════════════════════════
@@ -2413,8 +2417,10 @@ async function gerarPdfTicket(id){
     </div>
   </div>`;
 
-  document.getElementById('print-area').innerHTML=html;
-  setTimeout(()=>{window.print();document.getElementById('print-area').innerHTML='';},200);
+  const pa=document.getElementById('print-area');
+  pa.className='modo-a4';
+  pa.innerHTML=html;
+  setTimeout(()=>{window.print();pa.innerHTML='';pa.className='';},200);
 }
 
 document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('aberto');}));
