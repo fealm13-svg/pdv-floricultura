@@ -663,7 +663,12 @@ async function confirmarAgendamento(){
       if(dataStr&&dataStr.includes('-')){const[a,m,d]=dataStr.split('-');dataFormatada=`${d}/${m}/${a}`;}
       const diasSem=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
       let dataComDia=dataFormatada;
-      if(dataStr){const dt=new Date(dataStr+'T12:00:00');dataComDia=diasSem[dt.getDay()]+', '+dataFormatada;}
+      if(dataStr&&dataStr.includes('-')){
+        const [aa,mm,dd]=dataStr.split('-').map(Number);
+        const dt=new Date(aa,mm-1,dd);
+        const diasSemana=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+        dataComDia=diasSemana[dt.getDay()]+', '+dataFormatada;
+      }
       // Monta resumo
       document.getElementById('sucesso-resumo').innerHTML=`
         <div class="resumo-item"><div class="resumo-label">Pedido</div><div class="resumo-val">#${pedidoNum}</div></div>
