@@ -2306,8 +2306,15 @@ function confirmarAgendaPdv(){
 
 
 // ── PDF DO TICKET ────────────────────────────────────────
-function gerarPdfTicket(id){
-  const t=ticketsCache.find(x=>x.id===id);if(!t)return;
+async function gerarPdfTicket(id){
+  // Se cache vazio, recarrega
+  if(!ticketsCache.length){
+    mostrarLoading('Carregando ticket...');
+    await carregarTickets();
+    esconderLoading();
+  }
+  const t=ticketsCache.find(x=>x.id===id);
+  if(!t){toast('Ticket não encontrado. Tente novamente.','err');return;}
   const tipo=(t.tipo||'entrega')==='entrega'?'🚚 ENTREGA':'🛍️ RETIRADA';
   const origemLabel=t.origem==='cliente'?'Formulário do cliente':t.origem==='pendente'?'Aguardando cliente':'PDV';
 
