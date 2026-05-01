@@ -89,7 +89,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--texto);mi
 .btn-confirmar:disabled{background:var(--cinza2);cursor:not-allowed;}
 
 /* SUCESSO */
-.sucesso{display:none;text-align:center;padding:40px 20px;}
+.sucesso{text-align:center;padding:40px 20px;}
 .sucesso .check{width:64px;height:64px;background:var(--verde3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;}
 .sucesso h2{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--vinho);margin-bottom:8px;}
 .sucesso p{font-size:14px;color:#666;line-height:1.6;}
@@ -676,6 +676,7 @@ async function confirmarAgendamento(){
       // Esconde formulário e mostra sucesso
       document.getElementById('pg-form').style.display='none';
       document.getElementById('pg-sucesso').style.display='block';
+      document.querySelector('.sucesso').style.display='block';
       window.scrollTo(0,0);
       // Salva dados para o .ics
       window._icsData={dataStr,slot,pedidoNum,nome,produto:dados.produto||produto};
@@ -690,6 +691,7 @@ async function confirmarAgendamento(){
       // Mostra sucesso pois o dado foi enviado
       document.getElementById('pg-form').style.display='none';
       document.getElementById('pg-sucesso').style.display='block';
+      document.querySelector('.sucesso').style.display='block';
       window.scrollTo(0,0);
       document.getElementById('sucesso-resumo').innerHTML=`
         <div class="resumo-item resumo-destaque"><div class="resumo-label">✅ Status</div><div class="resumo-val">Agendamento recebido!</div></div>
