@@ -17,8 +17,8 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;}
 
 /* HEADER */
-.hdr{background:var(--vinho);padding:14px 20px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15);}
-.hdr img{height:44px;object-fit:contain;}
+.hdr{background:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:center;border-bottom:3px solid var(--vinho);box-shadow:0 1px 6px rgba(169,21,55,.08);}
+.hdr img{height:52px;object-fit:contain;}
 
 /* CONTAINER */
 .container{max-width:580px;margin:0 auto;padding:24px 16px 48px;}
@@ -603,7 +603,8 @@ async function confirmarAgendamento(){
   const agora=new Date();
   const termosTs=agora.toLocaleDateString('pt-BR')+' às '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   const dados={
-    action:'salvarTicket',
+    action:'editarTicket',
+    numero:pedidoNum,
     tipo:'entrega',
     data:document.getElementById('agenda-data').value,
     hora:document.getElementById('agenda-slot').value,
@@ -629,12 +630,10 @@ async function confirmarAgendamento(){
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(dados)});
     const d=await r.json();
     if(d.ok){
-      document.getElementById('pg-form').style.display='none';
-      const pg=document.getElementById('pg-sucesso');
-      pg.style.display='block';
+      // Coleta todos os dados do formulário para exibir no resumo
       const dataStr=document.getElementById('agenda-data').value;
       const slot=document.getElementById('agenda-slot').value;
-      const nome=document.getElementById('dest-nome').value.trim()+' '+document.getElementById('dest-sobrenome').value.trim();
+      const nome=(document.getElementById('dest-nome').value.trim()+' '+document.getElementById('dest-sobrenome').value.trim()).trim();
       const end=document.getElementById('rua').value.trim()+', '+document.getElementById('numero').value.trim();
       const bairro=document.getElementById('bairro').value.trim();
       const cidade=document.getElementById('cidade').value.trim();
@@ -643,17 +642,29 @@ async function confirmarAgendamento(){
       const apto=tipoEndereco==='residencial'?document.getElementById('apto').value.trim():'';
       const bloco=tipoEndereco==='residencial'?document.getElementById('bloco').value.trim():'';
       const dep=tipoEndereco==='comercial'?document.getElementById('departamento').value.trim():'';
+      const tel=document.getElementById('dest-tel').value.trim();
+      const obsEnd=document.getElementById('obs-end').value.trim();
+      // Formata data para exibição
+      let dataFormatada=dataStr;
+      if(dataStr&&dataStr.includes('-')){const[a,m,d]=dataStr.split('-');dataFormatada=`${d}/${m}/${a}`;}
+      const diasSem=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+      let dataComDia=dataFormatada;
+      if(dataStr){const dt=new Date(dataStr+'T12:00:00');dataComDia=diasSem[dt.getDay()]+', '+dataFormatada;}
       // Monta resumo
       document.getElementById('sucesso-resumo').innerHTML=`
         <div class="resumo-item"><div class="resumo-label">Pedido</div><div class="resumo-val">#${pedidoNum}</div></div>
-        <div class="resumo-item"><div class="resumo-label">Destinatário</div><div class="resumo-val">${nome}</div></div>
-        <div class="resumo-item resumo-destaque"><div class="resumo-label">📅 Data</div><div class="resumo-val">${dataStr}</div></div>
+        <div class="resumo-item resumo-destaque"><div class="resumo-label">📅 Data</div><div class="resumo-val">${dataComDia}</div></div>
         <div class="resumo-item resumo-destaque"><div class="resumo-label">⏰ Período</div><div class="resumo-val">${slot}</div></div>
-        <div class="resumo-item"><div class="resumo-label">📍 Endereço</div><div class="resumo-val">${end}${apto?' · Apto '+apto:''}${bloco?' · Bloco '+bloco:''}${dep?' · Depto '+dep:''}<br>${bairro}${cidade?' · '+cidade:''}</div></div>
-        ${cartaoMsg?`<div class="resumo-item"><div class="resumo-label">💌 Cartão</div><div class="resumo-val"><em>"${cartaoMsg}"</em>${cartaoAss?' — '+cartaoAss:''}</div></div>`:''}
+        <div class="resumo-item"><div class="resumo-label">👤 Destinatário</div><div class="resumo-val">${nome||'—'}${tel?'<br><span style="color:#888;font-size:11px">'+tel+'</span>':''}</div></div>
+        <div class="resumo-item"><div class="resumo-label">📍 Endereço</div><div class="resumo-val">${end}${apto?' · Apto '+apto:''}${bloco?' · Bloco '+bloco:''}${dep?' · Depto '+dep:''}<br><span style="color:#888">${bairro}${cidade?' · '+cidade:''}</span>${obsEnd?'<br><span style="color:#888;font-size:11px;font-style:italic">'+obsEnd+'</span>':''}</div></div>
+        ${cartaoMsg?`<div class="resumo-item"><div class="resumo-label">💌 Cartão</div><div class="resumo-val" style="font-style:italic">"${cartaoMsg}"${cartaoAss?'<br><span style="color:#888">— '+cartaoAss+'</span>':''}</div></div>`:''}
       `;
+      // Esconde formulário e mostra sucesso
+      document.getElementById('pg-form').style.display='none';
+      document.getElementById('pg-sucesso').style.display='block';
+      window.scrollTo(0,0);
       // Salva dados para o .ics
-      window._icsData={dataStr,slot,pedidoNum,nome,produto:dados.produto};
+      window._icsData={dataStr,slot,pedidoNum,nome,produto:dados.produto||produto};
     }else{
       document.getElementById('btn-confirmar').disabled=false;
       document.getElementById('btn-confirmar').textContent='✓ Confirmar agendamento';
