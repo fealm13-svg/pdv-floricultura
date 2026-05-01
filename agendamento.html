@@ -122,7 +122,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--texto);mi
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
 .cal-dia{aspect-ratio:1;border-radius:7px;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:500;transition:all .14s;display:flex;align-items:center;justify-content:center;}
 .cal-dia:hover:not(:disabled){background:var(--creme);}
-.cal-dia.disponivel{color:var(--texto);}
+.cal-dia.disponivel{color:var(--texto);background:#e8f0e0;}
+.cal-dia.disponivel:hover{background:#c8d4b8!important;}
 .cal-dia.selecionado{background:var(--vinho)!important;color:#fff!important;font-weight:700;}
 .cal-dia.hoje{border:1.5px solid var(--vinho);color:var(--vinho);}
 .cal-dia.passado,.cal-dia:disabled{color:#ccc;cursor:not-allowed;background:transparent!important;}
@@ -156,6 +157,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--texto);mi
   .modal-agenda{max-height:95vh;}
   .campo-row.col2,.campo-row.col3{grid-template-columns:1fr;}
 }
+
+/* Resumo de sucesso */
+.resumo-item{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--cinza);gap:12px;}
+.resumo-item:last-child{border:none;}
+.resumo-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;min-width:90px;}
+.resumo-val{font-size:13px;color:var(--texto);text-align:right;flex:1;}
+.resumo-destaque{background:var(--creme);border-radius:7px;padding:8px 10px!important;margin:4px 0;border:none!important;}
+.resumo-destaque .resumo-val{font-weight:700;color:var(--vinho);font-size:15px;}
+
 </style>
 </head>
 <body>
@@ -318,7 +328,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--texto);mi
   <div class="sucesso">
     <div class="check">✅</div>
     <h2>Agendamento confirmado!</h2>
-    <p id="sucesso-msg"></p>
+    <p style="font-size:13px;color:#666;margin-bottom:16px">Seu agendamento foi recebido com sucesso! Confira os detalhes abaixo.</p>
+    <div id="sucesso-resumo" style="text-align:left;margin-bottom:16px"></div>
+    <button onclick="salvarCalendario()" style="width:100%;padding:11px;background:var(--verde);border:none;border-radius:8px;color:#fff;font-family:DM Sans,sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px">📅 Salvar no meu calendário</button>
     <div class="contato">Dúvidas? Fale conosco pelo <a href="https://wa.me/5511952781267">WhatsApp (11) 95278-1267</a></div>
   </div>
 </div>
@@ -379,8 +391,8 @@ let agendaConfirmado=false;
 const params=new URLSearchParams(window.location.search);
 const pedidoNum=params.get('pedido')||'';
 const clienteNome=params.get('cliente')||'';
-const produto=params.get('produto')||'';
-const ehCesta=produto.toLowerCase().includes('cesta');
+let produto='';
+let ehCesta=false;
 
 // INIT
 window.addEventListener('DOMContentLoaded',async()=>{
@@ -394,6 +406,10 @@ window.addEventListener('DOMContentLoaded',async()=>{
       if(tk){pedidoData=tk;}
     }
   }catch(e){}
+  if(pedidoData){
+    produto=pedidoData.produto||'';
+    ehCesta=produto.toLowerCase().includes('cesta');
+  }
   mostrarForm();
 });
 
@@ -584,6 +600,8 @@ document.getElementById('termos-check').addEventListener('change',validarForm);
 
 // CONFIRMAR AGENDAMENTO
 async function confirmarAgendamento(){
+  const agora=new Date();
+  const termosTs=agora.toLocaleDateString('pt-BR')+' às '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   const dados={
     action:'salvarTicket',
     tipo:'entrega',
@@ -600,7 +618,8 @@ async function confirmarAgendamento(){
     cartao_ass:document.getElementById('cartao-ass').value.trim(),
     tipo_end:tipoEndereco,
     pedido_ref:pedidoNum,
-    origem:'cliente'
+    origem:'cliente',
+    termos_aceitos:termosTs
   };
 
   document.getElementById('btn-confirmar').disabled=true;
@@ -611,10 +630,30 @@ async function confirmarAgendamento(){
     const d=await r.json();
     if(d.ok){
       document.getElementById('pg-form').style.display='none';
-      document.getElementById('pg-sucesso').style.display='block';
+      const pg=document.getElementById('pg-sucesso');
+      pg.style.display='block';
       const dataStr=document.getElementById('agenda-data').value;
       const slot=document.getElementById('agenda-slot').value;
-      document.getElementById('sucesso-msg').textContent=`Seu pedido #${pedidoNum} está confirmado para entrega em ${dataStr} no período ${slot}. Em breve entraremos em contato para confirmar. 🌸`;
+      const nome=document.getElementById('dest-nome').value.trim()+' '+document.getElementById('dest-sobrenome').value.trim();
+      const end=document.getElementById('rua').value.trim()+', '+document.getElementById('numero').value.trim();
+      const bairro=document.getElementById('bairro').value.trim();
+      const cidade=document.getElementById('cidade').value.trim();
+      const cartaoMsg=document.getElementById('cartao-msg').value.trim();
+      const cartaoAss=document.getElementById('cartao-ass').value.trim();
+      const apto=tipoEndereco==='residencial'?document.getElementById('apto').value.trim():'';
+      const bloco=tipoEndereco==='residencial'?document.getElementById('bloco').value.trim():'';
+      const dep=tipoEndereco==='comercial'?document.getElementById('departamento').value.trim():'';
+      // Monta resumo
+      document.getElementById('sucesso-resumo').innerHTML=`
+        <div class="resumo-item"><div class="resumo-label">Pedido</div><div class="resumo-val">#${pedidoNum}</div></div>
+        <div class="resumo-item"><div class="resumo-label">Destinatário</div><div class="resumo-val">${nome}</div></div>
+        <div class="resumo-item resumo-destaque"><div class="resumo-label">📅 Data</div><div class="resumo-val">${dataStr}</div></div>
+        <div class="resumo-item resumo-destaque"><div class="resumo-label">⏰ Período</div><div class="resumo-val">${slot}</div></div>
+        <div class="resumo-item"><div class="resumo-label">📍 Endereço</div><div class="resumo-val">${end}${apto?' · Apto '+apto:''}${bloco?' · Bloco '+bloco:''}${dep?' · Depto '+dep:''}<br>${bairro}${cidade?' · '+cidade:''}</div></div>
+        ${cartaoMsg?`<div class="resumo-item"><div class="resumo-label">💌 Cartão</div><div class="resumo-val"><em>"${cartaoMsg}"</em>${cartaoAss?' — '+cartaoAss:''}</div></div>`:''}
+      `;
+      // Salva dados para o .ics
+      window._icsData={dataStr,slot,pedidoNum,nome,produto:dados.produto};
     }else{
       document.getElementById('btn-confirmar').disabled=false;
       document.getElementById('btn-confirmar').textContent='✓ Confirmar agendamento';
@@ -642,6 +681,26 @@ function montarObs(){
   }
   return obs;
 }
+
+function salvarCalendario(){
+  const d=window._icsData;if(!d)return;
+  // Converte data dd/mm/yyyy para yyyymmdd
+  const partes=d.dataStr.split('/');
+  const dateStr=partes[2]+partes[1]+partes[0];
+  // Pega hora início do slot "HH:00 — HH+1:00"
+  const hIni=parseInt(d.slot.split(':')[0]);
+  const hFim=hIni+1;
+  const tIni=`${String(hIni).padStart(2,'0')}0000`;
+  const tFim=`${String(hFim).padStart(2,'0')}0000`;
+  const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nDTSTART;TZID=America/Sao_Paulo:${dateStr}T${tIni}\r\nDTEND;TZID=America/Sao_Paulo:${dateStr}T${tFim}\r\nSUMMARY:Entrega Floricultura Dias - Pedido #${d.pedidoNum}\r\nDESCRIPTION:Produto: ${d.produto||''}\\nDestinatário: ${d.nome||''}\r\nLOCATION:Floricultura Dias\r\nEND:VEVENT\r\nEND:VCALENDAR`;
+  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`entrega-pedido-${d.pedidoNum}.ics`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
 </script>
 </body>
 </html>
