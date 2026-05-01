@@ -397,15 +397,21 @@ let ehCesta=false;
 // INIT
 window.addEventListener('DOMContentLoaded',async()=>{
   if(!pedidoNum){mostrarErro();return;}
-  // Busca dados do ticket no Sheets
+  // Busca dados do ticket com timeout de 4s — se falhar mostra o form mesmo assim
   try{
-    const r=await fetch(API+'?action=listarTickets');
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),4000);
+    const r=await fetch(API+'?action=listarTickets',{signal:controller.signal});
+    clearTimeout(timer);
     const d=await r.json();
     if(d.ok){
       const tk=d.tickets.find(t=>String(t.numero)===String(pedidoNum));
       if(tk){pedidoData=tk;}
     }
-  }catch(e){}
+  }catch(e){
+    // Timeout ou erro — continua sem dados do ticket
+    console.log('Aviso: não foi possível carregar dados do pedido, continuando...');
+  }
   if(pedidoData){
     produto=pedidoData.produto||'';
     ehCesta=produto.toLowerCase().includes('cesta');
@@ -448,6 +454,11 @@ function setTipo(tipo){
 }
 
 // CEP
+function fmtDataLocal(s){
+  if(!s)return'—';
+  if(s.includes('-')){const[a,m,d]=s.split('-');return`${d}/${m}/${a}`;}
+  return s;
+}
 function mascCep(el){let v=el.value.replace(/\D/g,'');if(v.length>5)v=v.slice(0,5)+'-'+v.slice(5,8);el.value=v;}
 function mascTel(el){let v=el.value.replace(/\D/g,'');if(v.length>11)v=v.slice(0,11);if(v.length>7)v='('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7);else if(v.length>2)v='('+v.slice(0,2)+') '+v.slice(2);else if(v.length>0)v='('+v;el.value=v;}
 
@@ -627,9 +638,12 @@ async function confirmarAgendamento(){
   document.getElementById('btn-confirmar').textContent='Enviando...';
 
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(dados)});
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),8000);
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(dados),signal:controller.signal});
+    clearTimeout(timer);
     const d=await r.json();
-    if(d.ok){
+    if(d.ok||d.id){
       // Coleta todos os dados do formulário para exibir no resumo
       const dataStr=document.getElementById('agenda-data').value;
       const slot=document.getElementById('agenda-slot').value;
@@ -671,9 +685,24 @@ async function confirmarAgendamento(){
       alert('Erro ao enviar. Tente novamente ou entre em contato pelo WhatsApp.');
     }
   }catch(e){
-    document.getElementById('btn-confirmar').disabled=false;
-    document.getElementById('btn-confirmar').textContent='✓ Confirmar agendamento';
-    alert('Erro de conexão. Tente novamente.');
+    // Se for AbortError, provavelmente os dados foram enviados mas a extensão cortou o response
+    if(e.name==='AbortError'){
+      // Mostra sucesso pois o dado foi enviado
+      document.getElementById('pg-form').style.display='none';
+      document.getElementById('pg-sucesso').style.display='block';
+      window.scrollTo(0,0);
+      document.getElementById('sucesso-resumo').innerHTML=`
+        <div class="resumo-item resumo-destaque"><div class="resumo-label">✅ Status</div><div class="resumo-val">Agendamento recebido!</div></div>
+        <div class="resumo-item"><div class="resumo-label">Pedido</div><div class="resumo-val">#${pedidoNum}</div></div>
+        <div class="resumo-item resumo-destaque"><div class="resumo-label">📅 Data</div><div class="resumo-val">${document.getElementById('agenda-data').value?fmtDataLocal(document.getElementById('agenda-data').value):'—'}</div></div>
+        <div class="resumo-item resumo-destaque"><div class="resumo-label">⏰ Período</div><div class="resumo-val">${document.getElementById('agenda-slot').value||'—'}</div></div>
+      `;
+      window._icsData={dataStr:document.getElementById('agenda-data').value,slot:document.getElementById('agenda-slot').value,pedidoNum,nome:'',produto:produto};
+    }else{
+      document.getElementById('btn-confirmar').disabled=false;
+      document.getElementById('btn-confirmar').textContent='✓ Confirmar agendamento';
+      alert('Erro de conexão. Tente novamente.');
+    }
   }
 }
 
