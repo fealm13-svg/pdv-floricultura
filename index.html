@@ -1493,7 +1493,7 @@ function tick(){
 function setFrente(f,btn){
   frenteAtual=f;
   document.querySelectorAll('.frente-btn').forEach(b=>b.classList.remove('ativo'));
-  btn.classList.add('ativo');
+  if(btn)btn.classList.add('ativo');
 }
 
 // ── PRODUTOS ────────────────────────────────────────────
@@ -1675,16 +1675,24 @@ function confirmarFinCompleta(){
 // ── SALVAR F9 ───────────────────────────────────────────
 async function salvarVendaDireta(){
   if(!carrinho.length)return;
+  // Sempre usa frenteAtual do botão selecionado
   if(!vendaPendente.itens||!vendaPendente.itens.length){
     const total=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
     vendaPendente={data:dataHoje(),itens:[...carrinho],total,pagamentos:[{forma:'dinheiro',valor:total}],observacao:'',cliente_id:clienteSelecionado?clienteSelecionado.id:'',cliente_nome:clienteSelecionado?clienteSelecionado.nome:'',frente:frenteAtual};
+  }else{
+    // Atualiza frente mesmo se já configurou via F1/F2
+    vendaPendente.frente=frenteAtual;
   }
   mostrarLoading('Salvando venda...');
   try{
     const r=await api({action:'salvarVenda',data:vendaPendente.data,itens:vendaPendente.itens.map(i=>({id:i.id,nome:i.nome,categoria:i.categoria,preco:i.preco,qtd:i.qtd,subtotal:parseFloat((i.preco*i.qtd).toFixed(2))})),total:parseFloat(vendaPendente.total.toFixed(2)),pagamentos:vendaPendente.pagamentos,observacao:vendaPendente.observacao,cliente_id:vendaPendente.cliente_id,cliente_nome:vendaPendente.cliente_nome,frente:vendaPendente.frente});
     if(r.ok){
       vendaParaCupom={...vendaPendente,id:r.id};
-      limparCarrinho();vendaPendente={};
+      limparCarrinho();
+      vendaPendente={};
+      // Reseta busca e frente para nova venda
+      limparBusca();
+      setFrente('Loja Física',document.querySelector('.frente-btn'));
       abrirOv('ov-pos-venda');
     }else toast('Erro: '+r.erro,'err');
   }catch(e){toast('Erro de conexão','err');}
