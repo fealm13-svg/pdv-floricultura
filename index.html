@@ -492,6 +492,92 @@ textarea.fi3{resize:vertical;min-height:56px;}
 /* Indicador origem cliente */
 .origem-badge{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:#fff3cd;color:#856404;margin-left:5px;}
 
+
+/* ══════════════════════════════
+   DASHBOARD
+══════════════════════════════ */
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.dash-card{background:var(--panel);border-radius:10px;padding:16px;position:relative;overflow:hidden;}
+.dash-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--vinho);}
+.dash-card.verde::before{background:var(--verde);}
+.dash-card.azul::before{background:#4a90d9;}
+.dash-card.laranja::before{background:#e8a838;}
+.dash-val{font-size:22px;font-weight:700;color:var(--vinho);margin-bottom:2px;}
+.dash-card.verde .dash-val{color:var(--verde2);}
+.dash-card.azul .dash-val{color:#4a90d9;}
+.dash-card.laranja .dash-val{color:#c8861a;}
+.dash-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#888;margin-bottom:6px;}
+.dash-comp{font-size:11px;margin-top:4px;}
+.dash-comp.up{color:var(--verde2);}
+.dash-comp.down{color:var(--vinho);}
+.dash-comp.neu{color:#888;}
+
+.meta-bar-wrap{margin-bottom:16px;background:var(--panel);border-radius:10px;padding:16px;}
+.meta-bar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.meta-bar-titulo{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;}
+.meta-bar-val{font-size:13px;color:#888;}
+.meta-bar-track{height:12px;background:var(--cinza2);border-radius:20px;overflow:hidden;margin-bottom:6px;}
+.meta-bar-fill{height:100%;border-radius:20px;background:var(--verde);transition:width .6s ease;}
+.meta-bar-fill.alerta{background:#e8a838;}
+.meta-bar-fill.danger{background:var(--vinho);}
+.meta-bar-info{display:flex;justify-content:space-between;font-size:11px;color:#888;}
+.meta-edit-btn{font-size:11px;padding:3px 10px;border:1.5px solid var(--cinza2);border-radius:5px;background:var(--bg);cursor:pointer;transition:all .14s;}
+.meta-edit-btn:hover{border-color:var(--vinho);color:var(--vinho);}
+
+.dash-section{background:var(--panel);border-radius:10px;padding:16px;margin-bottom:14px;}
+.dash-section-titulo{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--texto);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+
+.frente-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.frente-card{background:var(--bg);border-radius:8px;padding:12px;text-align:center;}
+.frente-icon{font-size:22px;margin-bottom:4px;}
+.frente-nome{font-size:11px;color:#888;margin-bottom:4px;}
+.frente-val{font-size:16px;font-weight:700;color:var(--vinho);}
+.frente-pct{font-size:10px;color:#888;margin-top:2px;}
+.frente-comp{font-size:10px;margin-top:2px;}
+
+.ranking-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--cinza2);}
+.ranking-item:last-child{border:none;}
+.ranking-pos{font-size:13px;font-weight:700;color:var(--cinza3);min-width:20px;}
+.ranking-nome{flex:1;font-size:12px;font-weight:500;}
+.ranking-val{font-size:13px;font-weight:700;color:var(--vinho);}
+.ranking-bar{height:4px;background:var(--cinza2);border-radius:2px;margin-top:3px;}
+.ranking-bar-fill{height:100%;border-radius:2px;background:var(--vinho);}
+
+.dia-semana-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.dia-card{background:var(--bg);border-radius:7px;padding:8px 4px;text-align:center;}
+.dia-nome{font-size:9px;color:#888;margin-bottom:4px;text-transform:uppercase;}
+.dia-val{font-size:12px;font-weight:700;color:var(--texto);}
+.dia-bar{height:40px;display:flex;align-items:flex-end;justify-content:center;margin:4px 0;}
+.dia-bar-fill{width:70%;border-radius:3px 3px 0 0;background:var(--vinho);min-height:2px;transition:height .4s ease;}
+.dia-card.melhor .dia-bar-fill{background:var(--verde);}
+.dia-card.melhor .dia-val{color:var(--verde2);}
+
+.entrega-resumo{display:flex;gap:14px;flex-wrap:wrap;}
+.entrega-item{text-align:center;}
+.entrega-item .ev{font-size:20px;font-weight:700;color:var(--vinho);}
+.entrega-item .el{font-size:10px;color:#888;}
+
+/* ══════════════════════════════
+   MINI GRÁFICA
+══════════════════════════════ */
+.grafica-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.gc-card{background:var(--panel);border-radius:9px;padding:12px 10px 10px;cursor:pointer;border:1.5px solid transparent;transition:all .15s;text-align:center;position:relative;}
+.gc-card:hover{border-color:var(--vinho);transform:translateY(-2px);box-shadow:var(--sombra2);}
+.gc-nome{font-size:12px;font-weight:500;color:var(--texto);margin-bottom:4px;line-height:1.3;}
+.gc-preco{font-size:13px;font-weight:700;color:var(--vinho);}
+.gc-edit{position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;font-size:12px;color:var(--cinza3);opacity:0;transition:opacity .14s;}
+.gc-card:hover .gc-edit{opacity:1;}
+
+.grafica-resumo{background:var(--panel);border-radius:10px;padding:16px;margin-bottom:14px;}
+.grafica-hist{background:var(--panel);border-radius:10px;padding:16px;}
+.gl-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--cinza2);}
+.gl-item:last-child{border:none;}
+.gl-prod{flex:1;font-size:12px;font-weight:500;}
+.gl-qtd{font-size:11px;color:#888;min-width:40px;text-align:center;}
+.gl-val{font-size:13px;font-weight:700;color:var(--vinho);min-width:70px;text-align:right;}
+.gl-del{background:none;border:none;cursor:pointer;color:var(--cinza3);font-size:12px;}
+.gl-del:hover{color:var(--vinho);}
+
 </style>
 </head>
 
@@ -517,11 +603,13 @@ textarea.fi3{resize:vertical;min-height:56px;}
   <div class="hdr-brand">🌸 Floricultura Dias</div>
   <nav class="hdr-nav">
     <button class="nb ativo" onclick="irPara('lancamento',this)">🛒 Lançamento <span class="kt">F1-F9</span></button>
+    <button class="nb" onclick="irPara('dashboard',this)">🏠 Dashboard</button>
     <button class="nb" onclick="irPara('historico',this)">📋 Histórico</button>
     <button class="nb" onclick="irPara('relatorio',this)">📊 Relatório</button>
     <button class="nb" onclick="irPara('produtos',this)">🌿 Produtos</button>
     <button class="nb" onclick="irPara('clientes',this)">👤 Clientes</button>
     <button class="nb" onclick="irPara('orcamentos',this)">📝 Orçamentos</button>
+    <button class="nb" onclick="irPara('grafica',this)">🖨️ Mini Gráfica</button>
     <button class="nb" onclick="irPara('tickets',this)">🎫 Tickets</button>
   </nav>
   <div class="hdr-hora"><strong id="hora">--:--</strong><span id="datah"></span></div>
@@ -1131,6 +1219,165 @@ textarea.fi3{resize:vertical;min-height:56px;}
   </div>
 </div>
 
+
+<!-- ══ DASHBOARD ══ -->
+<div class="pg" id="pg-dashboard" style="display:none">
+  <div class="pg-scroll">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h1 class="pt" style="margin:0">Dashboard</h1>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="fi2" id="dash-mes">
+          <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+          <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+          <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+          <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+        </select>
+        <select class="fi2" id="dash-ano"></select>
+        <button class="fb vm" onclick="gerarDashboard()">Atualizar</button>
+      </div>
+    </div>
+
+    <!-- META -->
+    <div class="meta-bar-wrap" id="meta-wrap">
+      <div class="meta-bar-header">
+        <span class="meta-bar-titulo">🎯 Meta do mês</span>
+        <button class="meta-edit-btn" onclick="abrirModalMeta()">✏️ Definir meta</button>
+      </div>
+      <div class="meta-bar-track"><div class="meta-bar-fill" id="meta-fill" style="width:0%"></div></div>
+      <div class="meta-bar-info">
+        <span id="meta-info-esq">Sem meta definida</span>
+        <span id="meta-info-dir"></span>
+      </div>
+    </div>
+
+    <!-- CARDS PRINCIPAIS -->
+    <div class="dash-grid" id="dash-cards"></div>
+
+    <!-- FRENTES -->
+    <div class="dash-section">
+      <div class="dash-section-titulo">🏪 Frentes de negócio</div>
+      <div class="frente-grid" id="dash-frentes"></div>
+    </div>
+
+    <!-- DIAS DA SEMANA -->
+    <div class="dash-section">
+      <div class="dash-section-titulo">📅 Faturamento por dia da semana</div>
+      <div class="dia-semana-grid" id="dash-dias"></div>
+    </div>
+
+    <!-- RANKING -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="dash-section" style="margin:0">
+        <div class="dash-section-titulo">🏆 Top categorias</div>
+        <div id="dash-ranking-cat"></div>
+      </div>
+      <div class="dash-section" style="margin:0">
+        <div class="dash-section-titulo">📦 Top produtos</div>
+        <div id="dash-ranking-prod"></div>
+      </div>
+    </div>
+
+    <!-- ENTREGAS -->
+    <div class="dash-section">
+      <div class="dash-section-titulo">🚚 Entregas e agendamentos</div>
+      <div class="entrega-resumo" id="dash-entregas"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MINI GRÁFICA ══ -->
+<div class="pg" id="pg-grafica" style="display:none">
+  <div class="pg-scroll">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h1 class="pt" style="margin:0">🖨️ Mini Gráfica</h1>
+      <button class="btn-novo" onclick="abrirModalGraficaProd(null)">+ Novo Produto</button>
+    </div>
+
+    <!-- Cards de produtos -->
+    <div class="grafica-grid" id="grafica-prods-grid"></div>
+
+    <!-- Resumo mensal -->
+    <div class="grafica-resumo">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600">📊 Resumo</div>
+        <div style="display:flex;gap:8px">
+          <select class="fi2" id="gr-mes">
+            <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+            <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+            <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+            <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+          </select>
+          <select class="fi2" id="gr-ano"></select>
+          <button class="fb vm" onclick="renderGraficaResumo()">Ver</button>
+        </div>
+      </div>
+      <div id="grafica-resumo-content"></div>
+    </div>
+
+    <!-- Histórico de lançamentos -->
+    <div class="grafica-hist">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;margin-bottom:12px">📋 Lançamentos</div>
+      <div class="fw" style="margin-bottom:10px">
+        <input type="date" class="fi2" id="gr-de">
+        <span style="color:#888;font-size:12px">até</span>
+        <input type="date" class="fi2" id="gr-ate">
+        <button class="fb vm" onclick="renderGraficaLancs()">Buscar</button>
+        <button class="fb vd" onclick="grHoje()">Hoje</button>
+        <button class="fb vd" onclick="grEsteMes()">Este mês</button>
+      </div>
+      <div id="grafica-lancs-list"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: Meta mensal -->
+<div class="ov" id="ov-meta">
+  <div class="modal" style="max-width:320px">
+    <div class="mt">🎯 Definir meta mensal</div>
+    <div class="campo"><label id="meta-modal-label">Meta para este mês (R$)</label>
+      <input type="number" id="meta-valor" step="100" min="0" placeholder="Ex: 30000">
+    </div>
+    <div class="ma">
+      <button class="bms" onclick="fecharOv('ov-meta')">Cancelar</button>
+      <button class="bmp" onclick="salvarMeta()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Produto mini gráfica -->
+<div class="ov" id="ov-grafica-prod">
+  <div class="modal" style="max-width:320px">
+    <div class="mt" id="mgp-titulo">Novo Produto</div>
+    <input type="hidden" id="mgp-id">
+    <div class="campo"><label>Nome do produto</label><input type="text" id="mgp-nome" placeholder="Ex: Urso médio"></div>
+    <div class="campo"><label>Preço (R$)</label><input type="number" id="mgp-preco" step="0.01" min="0" placeholder="0,00"></div>
+    <div class="ma">
+      <button class="bms" onclick="fecharOv('ov-grafica-prod')">Cancelar</button>
+      <button class="bmp" onclick="salvarGraficaProd()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Lançar venda mini gráfica -->
+<div class="ov" id="ov-grafica-lanc">
+  <div class="modal" style="max-width:320px">
+    <div class="mt">🖨️ Lançar venda</div>
+    <div class="mpi" id="gl-prod-info"></div>
+    <div class="cr">
+      <div class="campo"><label>Quantidade</label><input type="number" id="gl-qtd" value="1" min="1"></div>
+      <div class="campo"><label>Data</label><input type="date" id="gl-data"></div>
+    </div>
+    <div class="campo"><label>Total</label>
+      <div style="font-size:20px;font-weight:700;color:var(--vinho);padding:8px 0" id="gl-total">R$ 0,00</div>
+    </div>
+    <div class="ma">
+      <button class="bms" onclick="fecharOv('ov-grafica-lanc')">Cancelar</button>
+      <button class="bmp" onclick="confirmarGraficaLanc()">Lançar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 
@@ -1147,7 +1394,7 @@ const DIAS=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feir
 const MESES_LONG=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const NUM_PEDIDO_BASE=3278;
 
-let produtos=[],clientes=[],vendasCache=[],orcamentosCache=[],ticketsCache=[];
+let produtos=[],clientes=[],vendasCache=[],orcamentosCache=[],ticketsCache=[],metasCache=[],graficaProds=[],graficaLancs=[];
 let carrinho=[],prodSel=null,idxEditandoPreco=null,charts={};
 let fc2formas=false,frenteAtual='Loja Física';
 let vendaPendente={},clienteSelecionado=null,modoBarras='total',vendaParaCupom=null;
@@ -1202,8 +1449,22 @@ async function fazerLogin(){
       document.getElementById('main-hdr').style.display='flex';
       document.querySelectorAll('.pg').forEach(p=>p.style.display='');
       document.getElementById('pg-lancamento').classList.add('ativa');
-      await Promise.all([carregarProdutos(),carregarClientes(),carregarOrcamentos(),carregarTickets()]);
+      await Promise.all([carregarProdutos(),carregarClientes(),carregarOrcamentos(),carregarTickets(),carregarMetas(),carregarGrafica()]);
       tick();setInterval(tick,1000);
+      // Popula selects do dashboard
+      const dashAno=document.getElementById('dash-ano');
+      if(dashAno&&dashAno.options.length===0){
+        const a=new Date().getFullYear();
+        for(let i=a;i>=a-4;i--){const o=document.createElement('option');o.value=i;o.textContent=i;dashAno.appendChild(o);}
+      }
+      document.getElementById('dash-mes').value=new Date().getMonth();
+      // Popula selects da gráfica
+      const grAno=document.getElementById('gr-ano');
+      if(grAno&&grAno.options.length===0){
+        const a=new Date().getFullYear();
+        for(let i=a;i>=a-3;i--){const o=document.createElement('option');o.value=i;o.textContent=i;grAno.appendChild(o);}
+      }
+      document.getElementById('gr-mes').value=new Date().getMonth();
     }else{erro.textContent='Senha incorreta. Tente novamente.';}
   }catch(e){erro.textContent='Erro de conexão. Tente novamente.';}
   esconderLoading();
@@ -1211,7 +1472,7 @@ async function fazerLogin(){
 
 // ── API ──────────────────────────────────────────────────
 async function api(data){
-  const leitura=['listarVendas','listarProdutos','listarClientes','listarOrcamentos','listarTickets'];
+  const leitura=['listarVendas','listarProdutos','listarClientes','listarOrcamentos','listarTickets','listarMetas','listarGraficaProds','listarGraficaLancs'];
   if(leitura.includes(data.action)){
     const r=await fetch(API+'?action='+data.action);
     const t=await r.text();
@@ -2026,6 +2287,8 @@ function irPara(pg,btn){
   if(pg==='produtos')renderProds();
   if(pg==='clientes'){carregarClientes().then(()=>renderClientes());}
   if(pg==='orcamentos'){carregarOrcamentos();}
+  if(pg==='dashboard'){gerarDashboard();}
+  if(pg==='grafica'){renderGrafica();}
   if(pg==='tickets'){atualizarDisplayPedido();renderTickets();}
 }
 
@@ -2421,6 +2684,394 @@ async function gerarPdfTicket(id){
   pa.className='modo-a4';
   pa.innerHTML=html;
   setTimeout(()=>{window.print();pa.innerHTML='';pa.className='';},200);
+}
+
+
+// ── METAS ───────────────────────────────────────────────
+async function carregarMetas(){
+  try{const r=await api({action:'listarMetas'});if(r.ok)metasCache=r.metas||[];}catch(e){}
+}
+
+function getMeta(ano,mes){
+  const m=metasCache.find(x=>String(x.ano)===String(ano)&&String(x.mes)===String(mes));
+  return m?parseFloat(m.meta)||0:0;
+}
+
+function abrirModalMeta(){
+  const mes=parseInt(document.getElementById('dash-mes').value);
+  const ano=parseInt(document.getElementById('dash-ano').value);
+  const meta=getMeta(ano,mes);
+  const nomes=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  document.getElementById('meta-modal-label').textContent=`Meta para ${nomes[mes]} de ${ano} (R$)`;
+  document.getElementById('meta-valor').value=meta||'';
+  abrirOv('ov-meta');
+}
+
+async function salvarMeta(){
+  const mes=parseInt(document.getElementById('dash-mes').value);
+  const ano=parseInt(document.getElementById('dash-ano').value);
+  const meta=parseFloat(document.getElementById('meta-valor').value)||0;
+  mostrarLoading('Salvando meta...');
+  const r=await api({action:'salvarMeta',ano,mes,meta});
+  esconderLoading();
+  if(r.ok){
+    // Atualiza cache local
+    const idx=metasCache.findIndex(x=>String(x.ano)===String(ano)&&String(x.mes)===String(mes));
+    if(idx>=0)metasCache[idx].meta=meta;else metasCache.push({ano,mes,meta});
+    fecharOv('ov-meta');toast('Meta salva ✓','ok');gerarDashboard();
+  }else toast('Erro: '+r.erro,'err');
+}
+
+// ── DASHBOARD ───────────────────────────────────────────
+const DIAS_SEMANA=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MESES_NOME=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+async function gerarDashboard(){
+  mostrarLoading('Gerando dashboard...');
+  try{const r=await api({action:'listarVendas'});if(r.ok)vendasCache=r.vendas||[];}catch(e){}
+  try{const r=await api({action:'listarTickets'});if(r.ok)ticketsCache=r.tickets||[];}catch(e){}
+
+  const mes=parseInt(document.getElementById('dash-mes').value);
+  const ano=parseInt(document.getElementById('dash-ano').value);
+
+  // Mês atual
+  const vAtual=filtrarVendas(vendasCache,mes,ano);
+  const totalAtual=vAtual.reduce((s,v)=>s+(parseFloat(v.total)||0),0);
+
+  // Mês anterior
+  const mesPrev=mes===0?11:mes-1;
+  const anoPrev=mes===0?ano-1:ano;
+  const vPrev=filtrarVendas(vendasCache,mesPrev,anoPrev);
+  const totalPrev=vPrev.reduce((s,v)=>s+(parseFloat(v.total)||0),0);
+
+  // Mesmo mês ano anterior
+  const vAnoPrev=filtrarVendas(vendasCache,mes,ano-1);
+  const totalAnoPrev=vAnoPrev.reduce((s,v)=>s+(parseFloat(v.total)||0),0);
+
+  // Ticket médio
+  const ticketMedio=vAtual.length>0?totalAtual/vAtual.length:0;
+
+  // Meta
+  const meta=getMeta(ano,mes);
+  renderMeta(totalAtual,meta);
+
+  // Cards principais
+  renderDashCards(totalAtual,totalPrev,totalAnoPrev,ticketMedio,vAtual.length,vPrev.length);
+
+  // Frentes
+  renderFrentes(vAtual,totalAtual,vPrev);
+
+  // Dias da semana
+  renderDias(vAtual);
+
+  // Rankings
+  renderRankings(vAtual);
+
+  // Entregas
+  renderEntregas(mes,ano);
+
+  esconderLoading();
+}
+
+function filtrarVendas(vendas,mes,ano){
+  return vendas.filter(v=>{
+    if(!v.data)return false;
+    const nd=normData(v.data);
+    const[a,m]=nd.split('-').map(Number);
+    return m-1===mes&&a===ano;
+  });
+}
+
+function diffPct(atual,prev){
+  if(!prev)return null;
+  return((atual-prev)/prev*100).toFixed(1);
+}
+
+function compHtml(atual,prev,prefixo=''){
+  if(!prev||prev===0)return'<span class="dash-comp neu">Sem comparativo</span>';
+  const pct=diffPct(atual,prev);
+  const sinal=pct>0?'▲':'▼';
+  const cls=pct>0?'up':'down';
+  return`<span class="dash-comp ${cls}">${sinal} ${Math.abs(pct)}% ${prefixo}</span>`;
+}
+
+function renderMeta(total,meta){
+  const fill=document.getElementById('meta-fill');
+  const esq=document.getElementById('meta-info-esq');
+  const dir=document.getElementById('meta-info-dir');
+  if(!meta){
+    fill.style.width='0%';
+    esq.textContent='Sem meta definida para este mês';
+    dir.textContent='';
+    return;
+  }
+  const pct=Math.min(100,(total/meta)*100);
+  fill.style.width=pct+'%';
+  fill.className='meta-bar-fill'+(pct<50?' danger':pct<80?' alerta':'');
+  esq.textContent=`R$ ${fmtR(total)} de R$ ${fmtR(meta)} (${pct.toFixed(1)}%)`;
+  const falta=meta-total;
+  dir.textContent=falta>0?`Faltam R$ ${fmtR(falta)}`:'✅ Meta atingida!';
+}
+
+function renderDashCards(total,prev,anoPrev,ticket,nVendas,nPrev){
+  const mesPrevNome=MESES_NOME[parseInt(document.getElementById('dash-mes').value)===0?11:parseInt(document.getElementById('dash-mes').value)-1];
+  const ano=parseInt(document.getElementById('dash-ano').value);
+  document.getElementById('dash-cards').innerHTML=`
+    <div class="dash-card">
+      <div class="dash-lbl">Faturamento</div>
+      <div class="dash-val">R$ ${fmtR(total)}</div>
+      ${compHtml(total,prev,'vs mês ant.')}
+      ${anoPrev?compHtml(total,anoPrev,`vs ${ano-1}`):''}
+    </div>
+    <div class="dash-card verde">
+      <div class="dash-lbl">Ticket médio</div>
+      <div class="dash-val">R$ ${fmtR(ticket)}</div>
+      <span class="dash-comp neu">${nVendas} lançamento(s)</span>
+    </div>
+    <div class="dash-card azul">
+      <div class="dash-lbl">Mês anterior</div>
+      <div class="dash-val">R$ ${fmtR(prev)}</div>
+      <span class="dash-comp neu">${mesPrevNome}</span>
+    </div>
+    <div class="dash-card laranja">
+      <div class="dash-lbl">Mesmo mês ${ano-1}</div>
+      <div class="dash-val">R$ ${fmtR(anoPrev)}</div>
+      ${compHtml(total,anoPrev,`crescimento`)}
+    </div>
+  `;
+}
+
+function renderFrentes(vAtual,totalAtual,vPrev){
+  const frentes=['Loja Física','Loja Online','Estacionamento'];
+  const icons={'Loja Física':'🏪','Loja Online':'💻','Estacionamento':'🚗'};
+  document.getElementById('dash-frentes').innerHTML=frentes.map(f=>{
+    const vf=vAtual.filter(v=>(v.frente||'Loja Física')===f);
+    const tot=vf.reduce((s,v)=>s+(parseFloat(v.total)||0),0);
+    const pct=totalAtual?((tot/totalAtual)*100).toFixed(1):0;
+    const vfp=vPrev.filter(v=>(v.frente||'Loja Física')===f);
+    const totp=vfp.reduce((s,v)=>s+(parseFloat(v.total)||0),0);
+    return`<div class="frente-card">
+      <div class="frente-icon">${icons[f]}</div>
+      <div class="frente-nome">${f}</div>
+      <div class="frente-val">R$ ${fmtR(tot)}</div>
+      <div class="frente-pct">${pct}% do total</div>
+      ${totp?`<div class="frente-comp ${tot>=totp?'dash-comp up':'dash-comp down'}">${tot>=totp?'▲':'▼'} ${Math.abs(diffPct(tot,totp))}% vs ant.</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderDias(vAtual){
+  const totDia=[0,0,0,0,0,0,0];
+  vAtual.forEach(v=>{
+    const nd=normData(v.data);
+    if(!nd)return;
+    const[a,m,d]=nd.split('-').map(Number);
+    const dia=new Date(a,m-1,d).getDay();
+    totDia[dia]+=(parseFloat(v.total)||0);
+  });
+  const max=Math.max(...totDia)||1;
+  const melhor=totDia.indexOf(Math.max(...totDia));
+  document.getElementById('dash-dias').innerHTML=DIAS_SEMANA.map((d,i)=>`
+    <div class="dia-card${i===melhor?' melhor':''}">
+      <div class="dia-nome">${d}</div>
+      <div class="dia-bar"><div class="dia-bar-fill" style="height:${Math.round((totDia[i]/max)*36)+2}px"></div></div>
+      <div class="dia-val">R$ ${fmtR(totDia[i])}</div>
+    </div>`).join('');
+}
+
+function renderRankings(vAtual){
+  const porCat={},porProd={};
+  vAtual.forEach(v=>(v.itens||[]).forEach(i=>{
+    porCat[i.categoria]=(porCat[i.categoria]||0)+(parseFloat(i.subtotal)||parseFloat(i.preco)*i.qtd||0);
+    porProd[i.nome]=(porProd[i.nome]||0)+(parseFloat(i.subtotal)||parseFloat(i.preco)*i.qtd||0);
+  }));
+
+  const topCat=Object.entries(porCat).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const topProd=Object.entries(porProd).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxCat=topCat[0]?topCat[0][1]:1;
+  const maxProd=topProd[0]?topProd[0][1]:1;
+
+  function rankHtml(items,max){
+    return items.map(([nome,val],i)=>`
+      <div class="ranking-item">
+        <span class="ranking-pos">#${i+1}</span>
+        <div style="flex:1">
+          <div class="ranking-nome">${nome}</div>
+          <div class="ranking-bar"><div class="ranking-bar-fill" style="width:${Math.round((val/max)*100)}%"></div></div>
+        </div>
+        <span class="ranking-val">R$ ${fmtR(val)}</span>
+      </div>`).join('');
+  }
+
+  document.getElementById('dash-ranking-cat').innerHTML=topCat.length?rankHtml(topCat,maxCat):'<p style="color:#bbb;font-size:12px">Sem dados</p>';
+  document.getElementById('dash-ranking-prod').innerHTML=topProd.length?rankHtml(topProd,maxProd):'<p style="color:#bbb;font-size:12px">Sem dados</p>';
+}
+
+function renderEntregas(mes,ano){
+  const tkMes=ticketsCache.filter(t=>{
+    if(!t.data)return false;
+    const nd=normData(t.data);if(!nd)return false;
+    const[a,m]=nd.split('-').map(Number);
+    return m-1===mes&&a===ano;
+  });
+  const entregas=tkMes.filter(t=>(t.tipo||'entrega')==='entrega').length;
+  const retiradas=tkMes.filter(t=>t.tipo==='retirada').length;
+  const clientes=tkMes.filter(t=>t.origem==='cliente').length;
+  document.getElementById('dash-entregas').innerHTML=`
+    <div class="entrega-item"><div class="ev">${tkMes.length}</div><div class="el">Total de tickets</div></div>
+    <div class="entrega-item"><div class="ev">${entregas}</div><div class="el">Entregas</div></div>
+    <div class="entrega-item"><div class="ev">${retiradas}</div><div class="el">Retiradas</div></div>
+    <div class="entrega-item"><div class="ev">${clientes}</div><div class="el">Agend. pelo cliente</div></div>
+  `;
+}
+
+// ── MINI GRÁFICA ─────────────────────────────────────────
+async function carregarGrafica(){
+  try{const r=await api({action:'listarGraficaProds'});if(r.ok)graficaProds=r.produtos||[];}catch(e){}
+  try{const r=await api({action:'listarGraficaLancs'});if(r.ok)graficaLancs=r.lancamentos||[];}catch(e){}
+}
+
+function renderGrafica(){
+  renderGraficaCards();
+  renderGraficaResumo();
+  grEsteMes();
+  // Popular selects de ano/mês
+  const sa=document.getElementById('gr-ano');
+  if(sa&&sa.options.length===0){
+    const a=new Date().getFullYear();
+    for(let i=a;i>=a-3;i--){const o=document.createElement('option');o.value=i;o.textContent=i;sa.appendChild(o);}
+  }
+  document.getElementById('gr-mes').value=new Date().getMonth();
+}
+
+function renderGraficaCards(){
+  const grid=document.getElementById('grafica-prods-grid');
+  if(!graficaProds.length){
+    grid.innerHTML='<p style="color:#bbb;font-size:12px;grid-column:1/-1">Nenhum produto cadastrado. Clique em "+ Novo Produto".</p>';
+    return;
+  }
+  grid.innerHTML=graficaProds.map(p=>`
+    <div class="gc-card" onclick="abrirLancarGrafica('${p.id}')">
+      <button class="gc-edit" onclick="event.stopPropagation();abrirModalGraficaProd('${p.id}')">✏️</button>
+      <div class="gc-nome">${p.nome}</div>
+      <div class="gc-preco">R$ ${fmtR(parseFloat(p.preco)||0)}</div>
+    </div>`).join('');
+}
+
+function renderGraficaResumo(){
+  const mes=parseInt(document.getElementById('gr-mes').value);
+  const ano=parseInt(document.getElementById('gr-ano')?.value||new Date().getFullYear());
+  const lancs=graficaLancs.filter(l=>{
+    if(!l.data)return false;
+    const nd=normData(l.data);if(!nd)return false;
+    const[a,m]=nd.split('-').map(Number);
+    return m-1===mes&&a===ano;
+  });
+  const total=lancs.reduce((s,l)=>s+(parseFloat(l.total)||0),0);
+  // Agrupa por produto
+  const porProd={};
+  lancs.forEach(l=>{
+    if(!porProd[l.produto_nome])porProd[l.produto_nome]={qtd:0,total:0};
+    porProd[l.produto_nome].qtd+=parseInt(l.quantidade)||1;
+    porProd[l.produto_nome].total+=parseFloat(l.total)||0;
+  });
+  const el=document.getElementById('grafica-resumo-content');
+  if(!lancs.length){el.innerHTML='<p style="color:#bbb;font-size:12px">Nenhum lançamento neste período</p>';return;}
+  el.innerHTML=`
+    <div style="font-size:20px;font-weight:700;color:var(--vinho);margin-bottom:12px">Total: R$ ${fmtR(total)}</div>
+    ${Object.entries(porProd).sort((a,b)=>b[1].total-a[1].total).map(([nome,v])=>`
+      <div class="gl-item">
+        <span class="gl-prod">${nome}</span>
+        <span class="gl-qtd">${v.qtd} un.</span>
+        <span class="gl-val">R$ ${fmtR(v.total)}</span>
+      </div>`).join('')}
+  `;
+}
+
+function grHoje(){const h=dataHoje();document.getElementById('gr-de').value=h;document.getElementById('gr-ate').value=h;renderGraficaLancs();}
+function grEsteMes(){
+  const n=new Date();
+  document.getElementById('gr-de').value=new Date(n.getFullYear(),n.getMonth(),1).toISOString().split('T')[0];
+  document.getElementById('gr-ate').value=new Date(n.getFullYear(),n.getMonth()+1,0).toISOString().split('T')[0];
+  renderGraficaLancs();
+}
+
+function renderGraficaLancs(){
+  const de=document.getElementById('gr-de').value,ate=document.getElementById('gr-ate').value;
+  let lista=[...graficaLancs];
+  if(de)lista=lista.filter(l=>normData(l.data)>=de);
+  if(ate)lista=lista.filter(l=>normData(l.data)<=ate);
+  lista=lista.sort((a,b)=>normData(b.data).localeCompare(normData(a.data)));
+  const el=document.getElementById('grafica-lancs-list');
+  if(!lista.length){el.innerHTML='<p style="color:#bbb;font-size:12px">Nenhum lançamento encontrado</p>';return;}
+  const total=lista.reduce((s,l)=>s+(parseFloat(l.total)||0),0);
+  el.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:var(--vinho);margin-bottom:10px">Total: R$ ${fmtR(total)}</div>
+    ${lista.map(l=>`<div class="gl-item">
+      <span class="gl-prod">${l.produto_nome}<br><span style="font-size:10px;color:#888">${fmtData(l.data)}</span></span>
+      <span class="gl-qtd">${l.quantidade} un.</span>
+      <span class="gl-val">R$ ${fmtR(parseFloat(l.total)||0)}</span>
+      <button class="gl-del" onclick="deletarGraficaLanc('${l.id}')">✕</button>
+    </div>`).join('')}
+  `;
+}
+
+function abrirModalGraficaProd(id){
+  const p=id?graficaProds.find(x=>x.id===id):null;
+  document.getElementById('mgp-titulo').textContent=p?'Editar Produto':'Novo Produto';
+  document.getElementById('mgp-id').value=p?p.id:'';
+  document.getElementById('mgp-nome').value=p?p.nome:'';
+  document.getElementById('mgp-preco').value=p?parseFloat(p.preco).toFixed(2):'';
+  abrirOv('ov-grafica-prod');
+}
+
+async function salvarGraficaProd(){
+  const id=document.getElementById('mgp-id').value;
+  const nome=document.getElementById('mgp-nome').value.trim();
+  const preco=parseFloat(document.getElementById('mgp-preco').value)||0;
+  if(!nome){toast('Digite o nome','err');return;}
+  mostrarLoading('Salvando...');
+  const r=await api({action:id?'editarGraficaProd':'salvarGraficaProd',id:id||undefined,nome,preco});
+  esconderLoading();
+  if(r.ok){
+    fecharOv('ov-grafica-prod');toast('Produto salvo ✓','ok');
+    await carregarGrafica();renderGraficaCards();
+  }else toast('Erro: '+r.erro,'err');
+}
+
+let graficaLancSel=null;
+function abrirLancarGrafica(id){
+  graficaLancSel=graficaProds.find(p=>p.id===id);if(!graficaLancSel)return;
+  document.getElementById('gl-prod-info').innerHTML=`<div class="mpe">🖨️</div><div><div class="mpn">${graficaLancSel.nome}</div><div class="mpc">R$ ${fmtR(parseFloat(graficaLancSel.preco)||0)} por unidade</div></div>`;
+  document.getElementById('gl-qtd').value=1;
+  document.getElementById('gl-data').value=dataHoje();
+  document.getElementById('gl-total').textContent='R$ '+fmtR(parseFloat(graficaLancSel.preco)||0);
+  document.getElementById('gl-qtd').oninput=function(){
+    document.getElementById('gl-total').textContent='R$ '+fmtR((parseInt(this.value)||1)*(parseFloat(graficaLancSel.preco)||0));
+  };
+  abrirOv('ov-grafica-lanc');
+}
+
+async function confirmarGraficaLanc(){
+  if(!graficaLancSel)return;
+  const qtd=parseInt(document.getElementById('gl-qtd').value)||1;
+  const data=document.getElementById('gl-data').value;
+  const preco=parseFloat(graficaLancSel.preco)||0;
+  mostrarLoading('Lançando...');
+  const r=await api({action:'salvarGraficaLanc',data,produto_id:graficaLancSel.id,produto_nome:graficaLancSel.nome,preco,quantidade:qtd});
+  esconderLoading();
+  if(r.ok){
+    fecharOv('ov-grafica-lanc');toast('Lançamento registrado ✓','ok');
+    await carregarGrafica();renderGraficaCards();renderGraficaLancs();renderGraficaResumo();
+  }else toast('Erro: '+r.erro,'err');
+}
+
+async function deletarGraficaLanc(id){
+  if(!confirm('Excluir este lançamento?'))return;
+  mostrarLoading('Excluindo...');
+  const r=await api({action:'deletarGraficaLanc',id});esconderLoading();
+  if(r.ok){toast('Excluído','ok');await carregarGrafica();renderGraficaLancs();renderGraficaResumo();}
+  else toast('Erro: '+r.erro,'err');
 }
 
 document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('aberto');}));
