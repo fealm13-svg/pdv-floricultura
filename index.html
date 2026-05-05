@@ -1852,37 +1852,88 @@ async function exportarPDF(tipo){
 
 async function exportarRelatorioCompleto(){
   const {jsPDF}=window.jspdf;
-  const {mes,ano,porCat,total,porPag,frente}=relDados;
+  const {mes,ano,porCat,total,frente}=relDados;
   if(mes===undefined){toast('Gere o relatório primeiro','err');return;}
+
   const pdf=new jsPDF('p','mm','a4');
-  const pw=pdf.internal.pageSize.getWidth()-20;let y=15;
-  pdf.setFont('helvetica','bold');pdf.setFontSize(14);pdf.setTextColor(169,21,55);
+  const pw=pdf.internal.pageSize.getWidth()-20; // 190mm
+  let y=15;
+
+  // Título
+  pdf.setFont('helvetica','bold');
+  pdf.setFontSize(14);pdf.setTextColor(169,21,55);
   pdf.text('Gráfico de vendas por grupos de produtos no período',pw/2+10,y,{align:'center'});y+=7;
   const ini=`01/${String(mes+1).padStart(2,'0')}/${ano}`;
   const fim=`${new Date(ano,mes+1,0).getDate()}/${String(mes+1).padStart(2,'0')}/${ano}`;
-  pdf.setFontSize(11);pdf.setTextColor(80,80,80);
-  pdf.text(`${ini} - ${fim}${frente?' · '+frente:''}`,pw/2+10,y,{align:'center'});y+=8;
-  pdf.setDrawColor(200,200,200);pdf.line(10,y,pw+10,y);y+=6;
+  pdf.setFontSize(11);pdf.setTextColor(80,80,80);pdf.setFont('helvetica','normal');
+  pdf.text(`${ini} - ${fim}${frente?' · '+frente:''}`,pw/2+10,y,{align:'center'});y+=6;
+  pdf.setDrawColor(169,21,55);pdf.setLineWidth(0.5);pdf.line(10,y,pw+10,y);y+=8;
+
+  // Gráfico pizza via canvas
   const pizzaCanvas=document.getElementById('ch-pizza');
-  if(pizzaCanvas){const pizzaImg=pizzaCanvas.toDataURL('image/png');pdf.addImage(pizzaImg,'PNG',20,y,pw-20,80);y+=88;}
+  if(pizzaCanvas){
+    const pizzaImg=pizzaCanvas.toDataURL('image/png');
+    const maxW=100,maxH=70;
+    pdf.addImage(pizzaImg,'PNG',(pw/2+10)-(maxW/2),y,maxW,maxH);
+    y+=maxH+8;
+  }
+
+  // Tabela
   const sorted=Object.entries(porCat).filter(([,v])=>v.valor>0).sort((a,b)=>b[1].valor-a[1].valor);
+  const colW=[pw*0.48,pw*0.18,pw*0.17,pw*0.17];
   const headers=['Grupo de Produtos','Valores (R$)','Qtd. Vendidos','Percentual (%)'];
-  const colW=[pw*0.45,pw*0.2,pw*0.18,pw*0.17];
-  pdf.setFillColor(169,21,55);pdf.setTextColor(255,255,255);pdf.setFontSize(9);pdf.setFont('helvetica','bold');
+
+  // Cabeçalho tabela
+  pdf.setFillColor(169,21,55);pdf.setTextColor(255,255,255);
+  pdf.setFont('helvetica','bold');pdf.setFontSize(9);
   let x=10;
-  headers.forEach((h,i)=>{pdf.rect(x,y,colW[i],7,'F');pdf.text(h,x+2,y+5);x+=colW[i];});y+=7;
+  headers.forEach((h,i)=>{
+    pdf.rect(x,y,colW[i],7,'F');
+    pdf.text(h,x+2,y+5);
+    x+=colW[i];
+  });
+  y+=7;
+
+  // Linhas
+  const totalQtd=sorted.reduce((s,[,v])=>s+v.qtd,0);
   sorted.forEach(([cat,v],idx)=>{
     if(y>270){pdf.addPage();y=15;}
-    const bg=idx%2===0?[255,245,225]:[255,255,255];
-    pdf.setFillColor(...bg);pdf.setTextColor(42,26,30);pdf.setFont('helvetica','normal');pdf.setFontSize(8);
-    x=10;const cols=[cat,`R$ ${fmtR(v.valor)}`,String(v.qtd),`${total?((v.valor/total)*100).toFixed(2):0}%`];
-    cols.forEach((c,i)=>{pdf.rect(x,y,colW[i],6,'F');pdf.text(String(c),x+2,y+4.5);x+=colW[i];});y+=6;
+    const bgColor=idx%2===0?[255,245,225]:[255,255,255];
+    pdf.setFillColor(...bgColor);
+    pdf.setTextColor(42,26,30);
+    pdf.setFont('helvetica','normal');
+    pdf.setFontSize(8);
+    x=10;
+    const pct=total?((v.valor/total)*100).toFixed(2)+'%':'0%';
+    const cols=[cat,`R$ ${fmtR(v.valor)}`,String(v.qtd),pct];
+    cols.forEach((c,i)=>{
+      pdf.rect(x,y,colW[i],6,'F');
+      // Bordas
+      pdf.setDrawColor(220,213,200);pdf.setLineWidth(0.1);
+      pdf.rect(x,y,colW[i],6);
+      pdf.text(String(c),x+2,y+4.3);
+      x+=colW[i];
+    });
+    y+=6;
   });
-  const totalQtd=sorted.reduce((s,[,v])=>s+v.qtd,0);
-  pdf.setFillColor(200,212,184);pdf.setTextColor(42,26,30);pdf.setFont('helvetica','bold');pdf.setFontSize(9);
-  x=10;['Totais',`R$ ${fmtR(total)}`,String(totalQtd),'100%'].forEach((c,i)=>{pdf.rect(x,y,colW[i],7,'F');pdf.text(c,x+2,y+5);x+=colW[i];});
+
+  // Linha de total
+  if(y>270){pdf.addPage();y=15;}
+  pdf.setFillColor(200,212,184);
+  pdf.setTextColor(42,26,30);
+  pdf.setFont('helvetica','bold');pdf.setFontSize(9);
+  x=10;
+  [`Totais`,`R$ ${fmtR(total)}`,String(totalQtd),'100%'].forEach((c,i)=>{
+    pdf.rect(x,y,colW[i],7,'F');
+    pdf.setDrawColor(149,163,123);pdf.setLineWidth(0.2);
+    pdf.rect(x,y,colW[i],7);
+    pdf.text(c,x+2,y+5);
+    x+=colW[i];
+  });
+
   pdf.save(`relatorio-${MESES_LONG[mes]}-${ano}.pdf`);
 }
+
 
 function mkChart(key,id,cfg){if(charts[key])charts[key].destroy();charts[key]=new Chart(document.getElementById(id).getContext('2d'),cfg);}
 
