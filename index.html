@@ -1907,10 +1907,11 @@ async function exportarRelatorioCompleto(){
     const pct=total?((v.valor/total)*100).toFixed(2)+'%':'0%';
     const cols=[cat,`R$ ${fmtR(v.valor)}`,String(v.qtd),pct];
     cols.forEach((c,i)=>{
-      pdf.rect(x,y,colW[i],6,'F');
-      // Bordas
+      // Redefinir fill antes de cada célula para garantir cor correta
+      pdf.setFillColor(...bgColor);
       pdf.setDrawColor(220,213,200);pdf.setLineWidth(0.1);
-      pdf.rect(x,y,colW[i],6);
+      pdf.rect(x,y,colW[i],6,'FD');
+      pdf.setTextColor(42,26,30);
       pdf.text(String(c),x+2,y+4.3);
       x+=colW[i];
     });
@@ -1924,9 +1925,10 @@ async function exportarRelatorioCompleto(){
   pdf.setFont('helvetica','bold');pdf.setFontSize(9);
   x=10;
   [`Totais`,`R$ ${fmtR(total)}`,String(totalQtd),'100%'].forEach((c,i)=>{
-    pdf.rect(x,y,colW[i],7,'F');
+    pdf.setFillColor(200,212,184);
     pdf.setDrawColor(149,163,123);pdf.setLineWidth(0.2);
-    pdf.rect(x,y,colW[i],7);
+    pdf.rect(x,y,colW[i],7,'FD');
+    pdf.setTextColor(42,26,30);
     pdf.text(c,x+2,y+5);
     x+=colW[i];
   });
