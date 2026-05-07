@@ -957,6 +957,14 @@ textarea.fi3{resize:vertical;min-height:56px;}
     <div class="campo"><label>Data da venda</label><input type="date" id="fc-data"></div>
     <div class="campo"><label>Observação</label><input type="text" id="fc-obs" placeholder="Opcional..."></div>
     <div class="campo">
+      <label>Desconto (R$)</label>
+      <input type="number" id="fc-desconto" step="0.01" min="0" placeholder="0,00" oninput="onFcDesconto()" style="border-color:var(--verde2)">
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:#888;margin-top:-6px;margin-bottom:4px">
+      <span>Total sem desconto: <strong id="fc-total-sem">R$ 0,00</strong></span>
+      <span>Total com desconto: <strong id="fc-total-com" style="color:var(--verde2)">R$ 0,00</strong></span>
+    </div>
+    <div class="campo">
       <label>Pagamento</label>
       <div class="pr">
         <select class="ps" id="fc-pag1-forma"><option value="dinheiro">💵 Dinheiro</option><option value="pix">📱 Pix</option><option value="debito">💳 Débito</option><option value="credito">💳 Crédito</option></select>
@@ -1406,22 +1414,19 @@ function initTeclado(){
   document.addEventListener('keydown', e=>{
     const loginAtivo=document.getElementById('login-screen').style.display!=='none';
     if(loginAtivo) return;
-    if(teclasF.includes(e.key)){e.preventDefault();e.stopPropagation();}
-  }, true);
-  document.addEventListener('keydown', e=>{
-    const loginAtivo=document.getElementById('login-screen').style.display!=='none';
-    if(loginAtivo) return;
+    if(teclasF.includes(e.key)){e.preventDefault();}
+    // Handler principal
     const tag=document.activeElement.tagName;
     const digitando=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
     const modalAberto=document.querySelector('.ov.aberto');
-    if(e.key==='Escape'){if(modalAberto){modalAberto.classList.remove('aberto');e.preventDefault();}return;}
+    if(e.key==='Escape'){if(modalAberto){modalAberto.classList.remove('aberto');}return;}
     if(e.key==='Enter'&&modalAberto){
       const id=modalAberto.id;
-      if(id==='ov-item'){e.preventDefault();confirmarItem();}
-      else if(id==='ov-preco'){e.preventDefault();confirmarNovoPreco();}
-      else if(id==='ov-fin-rapida'){e.preventDefault();confirmarFinRapida();}
-      else if(id==='ov-fin-completa'){e.preventDefault();confirmarFinCompleta();}
-      else if(id==='ov-pos-venda'){e.preventDefault();fecharPosVenda(false);}
+      if(id==='ov-item'){confirmarItem();}
+      else if(id==='ov-preco'){confirmarNovoPreco();}
+      else if(id==='ov-fin-rapida'){confirmarFinRapida();}
+      else if(id==='ov-fin-completa'){confirmarFinCompleta();}
+      else if(id==='ov-pos-venda'){fecharPosVenda(false);}
       return;
     }
     if(modalAberto||digitando) return;
@@ -1432,7 +1437,7 @@ function initTeclado(){
     else if(e.key==='F3'){document.getElementById('busca-input').focus();}
     else if(e.key==='F4'){limparCarrinho();}
     else if(e.key==='F9'){salvarVendaDireta();}
-  });
+  }, true);
 }
 initTeclado();
 
@@ -1622,8 +1627,12 @@ function abrirFinCompleta(){
   if(!carrinho.length)return;
   document.getElementById('fc-data').value=dataHoje();
   document.getElementById('fc-obs').value='';
+  document.getElementById('fc-desconto').value='';
   document.getElementById('fc-pag1-val').value='';
   document.getElementById('fc-pag2-val').value='';
+  const totalBruto=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  document.getElementById('fc-total-sem').textContent='R$ '+fmtR(totalBruto);
+  document.getElementById('fc-total-com').textContent='R$ '+fmtR(totalBruto);
   fc2formas=false;
   document.getElementById('fc-pag2-wrap').style.display='none';
   document.getElementById('fc-btn2f').textContent='+ Dividir em 2 formas';
@@ -1633,14 +1642,18 @@ function abrirFinCompleta(){
 }
 function onFcPag1Val(){
   if(!fc2formas)return;
-  const total=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const totalBruto=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const desc=parseFloat(document.getElementById('fc-desconto').value)||0;
+  const total=Math.max(0,totalBruto-desc);
   const v1=parseFloat(document.getElementById('fc-pag1-val').value)||0;
   const resto=Math.max(0,total-v1);
   document.getElementById('fc-pag2-val').value=resto>0?resto.toFixed(2):'';
   atualizarPstFc();
 }
 function atualizarPstFc(){
-  const total=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const totalBruto=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const desc=parseFloat(document.getElementById('fc-desconto').value)||0;
+  const total=Math.max(0,totalBruto-desc);
   const v1=parseFloat(document.getElementById('fc-pag1-val').value)||0;
   const v2=fc2formas?parseFloat(document.getElementById('fc-pag2-val').value)||0:0;
   const soma=v1+v2;const el=document.getElementById('fc-pst');
@@ -1650,6 +1663,16 @@ function atualizarPstFc(){
   else if(delta<0){el.textContent=`Faltam R$ ${fmtR(Math.abs(delta))}`;el.className='pst err';}
   else{el.textContent=`Troco: R$ ${fmtR(delta)}`;el.className='pst ok';}
 }
+function onFcDesconto(){
+  const totalBruto=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const desc=parseFloat(document.getElementById('fc-desconto').value)||0;
+  const totalLiq=Math.max(0,totalBruto-desc);
+  document.getElementById('fc-total-sem').textContent='R$ '+fmtR(totalBruto);
+  document.getElementById('fc-total-com').textContent='R$ '+fmtR(totalLiq);
+  // Atualiza campo de pagamento se já preenchido
+  onFcPag1Val();
+}
+
 function toggle2FormaFc(){
   fc2formas=!fc2formas;
   const w=document.getElementById('fc-pag2-wrap'),b=document.getElementById('fc-btn2f');
@@ -1657,7 +1680,9 @@ function toggle2FormaFc(){
   else{w.style.display='none';b.textContent='+ Dividir em 2 formas';b.className='btn2f';document.getElementById('fc-pag2-val').value='';atualizarPstFc();}
 }
 function confirmarFinCompleta(){
-  const total=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const totalBruto=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const desc=parseFloat(document.getElementById('fc-desconto').value)||0;
+  const total=Math.max(0,totalBruto-desc);
   const v1=parseFloat(document.getElementById('fc-pag1-val').value)||0;
   const f1=document.getElementById('fc-pag1-forma').value;
   const v2=fc2formas?parseFloat(document.getElementById('fc-pag2-val').value)||0:0;
@@ -1668,7 +1693,10 @@ function confirmarFinCompleta(){
   if(!pags.length)pags=[{forma:f1,valor:total}];
   const soma=pags.reduce((s,p)=>s+p.valor,0);
   if(soma>0&&Math.abs(soma-total)>0.05){if(!confirm(`Pagamentos (R$ ${fmtR(soma)}) ≠ Total (R$ ${fmtR(total)}). Confirmar?`))return;}
-  vendaPendente={data:document.getElementById('fc-data').value||dataHoje(),itens:[...carrinho],total,pagamentos:pags,observacao:document.getElementById('fc-obs').value,cliente_id:clienteSelecionado?clienteSelecionado.id:'',cliente_nome:clienteSelecionado?clienteSelecionado.nome:'',frente:frenteAtual};
+  const obsBase=document.getElementById('fc-obs').value;
+  const obsDesc=desc>0?`Desconto: R$ ${fmtR(desc)}`:'';
+  const obs=[obsBase,obsDesc].filter(Boolean).join(' | ');
+  vendaPendente={data:document.getElementById('fc-data').value||dataHoje(),itens:[...carrinho],total,pagamentos:pags,observacao:obs,cliente_id:clienteSelecionado?clienteSelecionado.id:'',cliente_nome:clienteSelecionado?clienteSelecionado.nome:'',frente:frenteAtual};
   fecharOv('ov-fin-completa');toast('Configurado! Pressione F9 para salvar.','ok');
 }
 
@@ -2378,6 +2406,8 @@ async function salvarTicketNaApi(dados){
     const r=await api({action:'salvarTicket',...dados});
     if(r.ok){
       ticketsCache.push({...dados,id:r.id,numero:r.numero});
+      // Sincroniza localStorage com o número real do Sheets
+      localStorage.setItem('fd_num_pedido',r.numero);
       return r.numero;
     }
   }catch(e){console.error('Erro ao salvar ticket',e);}
